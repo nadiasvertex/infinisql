@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with InfiniSQL. If not, see <http://www.gnu.org/licenses/>.
  */
-
 %define api.pure
 %parse-param {struct perlarxer *pld}
 
@@ -42,7 +41,7 @@ int yylex(YYSTYPE *, yyscan_t);
 
 %union
 {
-  long int integer;
+  int64_t integer;
   long double floating;
   char *str;
 }

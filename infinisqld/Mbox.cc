@@ -44,9 +44,9 @@ Mbox::Mbox() : counter(8888)
     myLastMsg = firstMsg;
 
     head = getInt128FromPointer(firstMsg, 10000);
-    tail = head;
-    current = head;
-    mytail = head;
+    tail.store(head);
+    current.store(head);
+    mytail.store(head);
 
     pthread_mutexattr_t attr;
     attr.__align = PTHREAD_MUTEX_ADAPTIVE_NP;
@@ -69,7 +69,7 @@ class Message *Mbox::receive(int timeout)
 
     while (1)
     {
-        mynext = __atomic_load_n(&(getPtr(current)->nextmsg), __ATOMIC_SEQ_CST);
+        mynext = getPtr(current)->nextmsg;
 
         if (getPtr(mynext)==NULL)
         {
@@ -112,9 +112,9 @@ __int128 Mbox::getInt128FromPointer(class Message *ptr, uint64_t count)
     return i128;
 }
 
-class Message *Mbox::getPtr(__int128 i128)
+Message *Mbox::getPtr(__int128 i128)
 {
-    return (class Message *)i128;
+    return reinterpret_cast<Message *>(i128);
 }
 
 uint64_t Mbox::getCount(__int128 i128)
@@ -166,15 +166,14 @@ void MboxProducer::sendMsg(class Message &msgsnd)
 
     while (1)
     {
-        mytail = __atomic_load_n(&mbox->tail, __ATOMIC_SEQ_CST);
-        mynext = __atomic_load_n(&(Mbox::getPtr(mytail)->nextmsg),
-                                 __ATOMIC_SEQ_CST);
+        mytail = mbox->tail;
+        mynext = Mbox::getPtr(mytail)->nextmsg;
 
-        if (mytail == __atomic_load_n(&mbox->tail, __ATOMIC_SEQ_CST))
+        if (mytail == mbox->tail)
         {
             if (Mbox::getPtr(mynext) == NULL)
             {
-                if (__atomic_compare_exchange_n(&(Mbox::getPtr(mytail)->nextmsg), &mynext, Mbox::getInt128FromPointer(&msg, __atomic_add_fetch(&mbox->counter, 1, __ATOMIC_SEQ_CST)), false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST))
+                if (Mbox::getPtr(mytail)->nextmsg.compare_exchange_strong(mynext, Mbox::getInt128FromPointer(&msg, mbox->counter.fetch_add(1))))
                 {
                     break;
                 }

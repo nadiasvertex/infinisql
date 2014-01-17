@@ -29,6 +29,7 @@
 #define INFINISQLINDEX_H
 
 #include "gch.h"
+#include <limits>
 
 /** 
  * @brief value for UNIQUE (potentially locking) indices
@@ -1187,7 +1188,7 @@ public:
         string beginStr(tmpStr, 0, std::min(n, regexStr->size()));
         string endStr = beginStr;
 
-        if (endStr[endStr.size()-1] == 255)
+        if (endStr[endStr.size()-1] == std::numeric_limits<std::string::value_type>::max())
         {
             endStr.append(1, 1);
         }

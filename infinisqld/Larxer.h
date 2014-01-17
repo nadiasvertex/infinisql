@@ -367,8 +367,8 @@ public:
 	void consumeOrderby();
 
 	std::stack<stackmember_s> parsedStack;
-	class Statement::query_s *currentQuery;
-	class Statement *statementPtr;
+	Statement::query_s *currentQuery;
+	Statement *statementPtr;
 };
 
 #endif /* INFINISQLLARXER_H */

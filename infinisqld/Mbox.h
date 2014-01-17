@@ -29,6 +29,7 @@
 #ifndef INFINISQLMBOX_H
 #define INFINISQLMBOX_H
 
+#include <atomic>
 #include "Message.h"
 #include "Topology.h"
 
@@ -89,17 +90,17 @@ public:
 private:
     pthread_mutex_t mutexLast;
 
-    class Message *firstMsg;
-    class Message *currentMsg;
-    class Message *lastMsg;
-    class Message *myLastMsg; // not to be modified by producer
+    Message *firstMsg;
+    Message *currentMsg;
+    Message *lastMsg;
+    Message *myLastMsg; // not to be modified by producer
 
-    __int128 head;
-    __int128 tail;
-    __int128 current;
-    __int128 mytail;
+    std::atomic<__int128> head;
+    std::atomic<__int128> tail;
+    std::atomic<__int128> current;
+    std::atomic<__int128> mytail;
 
-    uint64_t counter;
+    std::atomic<uint64_t> counter;
 };
 
 /** 

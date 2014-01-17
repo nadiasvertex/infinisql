@@ -45,6 +45,7 @@
 #include <lz4.h>
 
 // sys C++
+#include <cstdint>
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
@@ -59,7 +60,6 @@
 #include <sstream>
 #include <stack>
 // sys C
-#include <stdint.h>
 #include <pthread.h>
 #include <errno.h>
 #ifndef _BSD_SOURCE

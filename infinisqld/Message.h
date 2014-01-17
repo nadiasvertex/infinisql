@@ -29,6 +29,7 @@
 
 #ifndef INFINISQLMESSAGE_H
 #define INFINISQLMESSAGE_H
+#include <atomic>
 
 #include "gch.h"
 #include "defs.h"
@@ -154,7 +155,7 @@ public:
     void setEnvelope(const Topology::addressStruct &source,
                      const Topology::addressStruct &dest, class Message &msg);
 
-    __int128 nextmsg;
+    std::atomic<__int128> nextmsg;
     message_s messageStruct;
 };
 
