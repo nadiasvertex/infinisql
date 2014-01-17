@@ -31,6 +31,7 @@ def tbb(archive_path):
    os.system('make tbb')
    tbb_lib_path = find_folder_with_file(os.getcwd(), "libtbb.so")
    copy_lib(os.path.join(tbb_lib_path, "libtbb.so"))
+   copy_lib(os.path.join(tbb_lib_path, "libtbb.so.2"))
    
 #===============================================================================
 packages = [("https://www.threadingbuildingblocks.org/sites/default/files/software_releases/source/tbb42_20131118oss_src.tgz",
