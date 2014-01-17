@@ -62,23 +62,21 @@ public:
 0     */
     void getmsg(int timeout);
     
-    class Message *msgrcv;
-    class Mboxes mboxes;
+    Message *msgrcv;
+    Mboxes mboxes;
     Topology::actorIdentity myIdentity;
-    class Topology myTopology;
+    Topology myTopology;
 
-    class Message reuseMessage;
-    class MessageSocket reuseMessageSocket;
-    class MessageUserSchema reuseMessageUserSchema;
-    class MessageDeadlock reuseMessageDeadlock;
-    class MessageSubtransactionCmd reuseMessageSubtransactionCmd;
-    class MessageCommitRollback reuseMessageCommitRollback;
-    class MessageDispatch reuseMessageDispatch;
-    class MessageAckDispatch reuseMessageAckDispatch;
-    class MessageApply reuseMessageApply;
-    class MessageAckApply reuseMessageAckApply;
-
-    
+    Message reuseMessage;
+    MessageSocket reuseMessageSocket;
+    MessageUserSchema reuseMessageUserSchema;
+    MessageDeadlock reuseMessageDeadlock;
+    MessageSubtransactionCmd reuseMessageSubtransactionCmd;
+    MessageCommitRollback reuseMessageCommitRollback;
+    MessageDispatch reuseMessageDispatch;
+    MessageAckDispatch reuseMessageAckDispatch;
+    MessageApply reuseMessageApply;
+    MessageAckApply reuseMessageAckApply;
 };
 
 #endif  /* INFINISQLACTOR_H */

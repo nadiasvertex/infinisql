@@ -99,7 +99,17 @@ public:
     };
   
     Message();
+    Message(const Message &m):nextmsg(m.nextmsg.load()), messageStruct(m.messageStruct) {
+    }
+    Message(Message &&m) = default;
     virtual ~Message();
+
+    Message& operator=(const Message &m) {
+    	messageStruct = m.messageStruct;
+    	nextmsg.store(m.nextmsg.load());
+    	return *this;
+    }
+
     /** 
      * @brief get Message size
      *

@@ -3,7 +3,12 @@ from glob import glob
 
 env = Environment(CXX="clang++")
 env.Append(YACCFLAGS='--defines=parser.h')
-env.Append(CCFLAGS="-g --std=c++11 -finline-functions -Wall -Wno-deprecated -Wno-write-strings -I./ -I../infinisqld")
+env.Append(CCFLAGS=\
+ "-g --std=c++11 -finline-functions "
+ "-Wall -Wno-deprecated -Wno-write-strings "
+ "-I./ -I../infinisqld " #-I../lib/tbb42_20131118oss/include
+)
+#env.Append(LFLAGS="-L../lib/tbb42_20131118oss/build/linux_intel64_clang_cc4.8_libc2.17_kernel3.11.0_release ")
 env.Append(LIBS = ["dl", "rt", "cryptopp", "pcrecpp", "pcre", "lz4", "msgpack", "zmq", "pthread"])
 
 infinisqld_sources = [

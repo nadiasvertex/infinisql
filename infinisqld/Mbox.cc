@@ -173,7 +173,10 @@ void MboxProducer::sendMsg(class Message &msgsnd)
         {
             if (Mbox::getPtr(mynext) == NULL)
             {
-                if (Mbox::getPtr(mytail)->nextmsg.compare_exchange_strong(mynext, Mbox::getInt128FromPointer(&msg, mbox->counter.fetch_add(1))))
+                if (Mbox::getPtr(mytail)->nextmsg
+                	 .compare_exchange_strong(mynext,
+                			 Mbox::getInt128FromPointer(&msg,
+                					 mbox->counter.fetch_add(1))))
                 {
                     break;
                 }
@@ -181,12 +184,15 @@ void MboxProducer::sendMsg(class Message &msgsnd)
             else
             {
                 // CAS(&Q->Tail, tail, <next.ptr, tail.count+1>)
-                __atomic_compare_exchange_n(&mbox->tail, &mytail, Mbox::getInt128FromPointer(Mbox::getPtr(mynext), __atomic_add_fetch(&mbox->counter, 1, __ATOMIC_SEQ_CST)), false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+                mbox->tail.compare_exchange_strong(mytail,
+                		Mbox::getInt128FromPointer(Mbox::getPtr(mynext),
+                				mbox->counter.fetch_add(1)));
             }
         }
     }
 
-    __atomic_compare_exchange_n(&mbox->tail, &mytail, Mbox::getInt128FromPointer(&msg, __atomic_add_fetch(&mbox->counter, 1, __ATOMIC_SEQ_CST)), false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+    mbox->tail.compare_exchange_strong(mytail,
+    		Mbox::getInt128FromPointer(&msg, mbox->counter.fetch_add(1)));
 }
 
 Mboxes::Mboxes() : Mboxes(0)
