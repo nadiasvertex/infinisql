@@ -19,7 +19,7 @@ infinisqld_sources = [
 test_sources = glob("src/*.cc")
 
 sources = ['gtest/gtest-all.cc', 'gtest/gtest_main.cc'] + test_sources +\
- [os.path.join('..', 'infinisqld', src) for src in infinisqld_sources]# +\
-# [env.CXXFile(source=os.path.join('..', 'infinisqld', src)) for src in ['lexer.ll', 'parser.yy']]
+ [os.path.join('..', 'infinisqld', src) for src in infinisqld_sources] +\
+ [env.CXXFile(source=os.path.join('..', 'infinisqld', src)) for src in ['lexer.ll', 'parser.yy']]
 
 env.Program('test', sources)
