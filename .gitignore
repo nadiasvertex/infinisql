@@ -25,3 +25,4 @@ docs/._.DS_Store
 docs/doxy/latex/*
 infinisqlmgr.conf
 .idea
+tests/parser.h
