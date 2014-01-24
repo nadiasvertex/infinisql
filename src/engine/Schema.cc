@@ -33,17 +33,17 @@ Schema::Schema() : Metadata()
     
 }
 
-Schema::Schema(std::shared_ptr<Catalog> parentCatalogarg, const std::string &namearg)
+Schema::Schema(std::shared_ptr<Catalog> parentCatalog, const std::string &name)
 {
-    if (parentCatalogarg->schemaName2Id.count(namearg))
+    if (parentCatalog->schemaName2Id.count(name))
     {
         id=-1;
         return;
     }
-    parentCatalog=parentCatalogarg;
+    parentCatalog=parentCatalog;
     getparents();
     id=parentCatalog->getnextschemaid();
-    name=namearg;
+    name=name;
     parentCatalog->schemaName2Id[name]=id;
     parentCatalog->schemaid2Schema[id]=this;    
 }

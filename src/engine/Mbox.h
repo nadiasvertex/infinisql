@@ -98,8 +98,8 @@ public:
     /**
      * @brief create mailbox producer
      *
-     * @param mboxarg Mbox to put Message object onto
-     * @param nodeidarg nodeid
+     * @param mbox Mbox to put Message object onto
+     * @param nodeid nodeid
      */
     MboxProducer(Mbox *mbox, int16_t nodeid);
     /**

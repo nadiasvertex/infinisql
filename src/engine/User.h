@@ -37,14 +37,14 @@ public:
     /** 
      * @brief first instantiation from UserSchemaMgr
      *
-     * @param parentCatalogarg parent Catalog
-     * @param namearg username
-     * @param passwordarg password
+     * @param parentCatalog parent Catalog
+     * @param name username
+     * @param password password
      *
      * @return 
      */
-    User(std::shared_ptr<Catalog> parentCatalogarg, const std::string &namearg,
-         std::string &passwordarg);
+    User(std::shared_ptr<Catalog> parentCatalog, const std::string &name,
+         std::string &password);
     User(const User &orig);
     User &operator= (const User &orig);
     /** 

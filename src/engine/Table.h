@@ -37,7 +37,7 @@ class Table : public Metadata
 {
 public:
     Table();
-    Table(std::shared_ptr<Schema> parentSchemaarg, const std::string &namearg);
+    Table(std::shared_ptr<Schema> parentSchema, const std::string &name);
     Table(const Table &orig);
     Table &operator= (const Table &orig);
     /** 

@@ -35,17 +35,17 @@ Index::Index() : Metadata ()
     
 }
 
-Index::Index(std::shared_ptr<Table> parentTablearg, const std::string &namearg)
+Index::Index(std::shared_ptr<Table> parentTable, const std::string &name)
 {
-    if (parentTablearg->parentCatalog->indexName2Id.count(namearg))
+    if (parentTable->parentCatalog->indexName2Id.count(name))
     {
         id=-1;
         return;
     }
-    parentTable=parentTablearg;
+    parentTable=parentTable;
     getparents();
     id=parentCatalog->getnextindexid();
-    name=namearg;
+    name=name;
     parentCatalog->indexName2Id[name]=id;
     parentCatalog->indexid2Index[id]=this;
     parentSchema->indexName2Id[name]=id;

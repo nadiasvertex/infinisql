@@ -34,19 +34,19 @@ User::User() : Metadata ()
     
 }
 
-User::User(std::shared_ptr<Catalog> parentCatalogarg, const std::string &namearg,
-           std::string &passwordarg)
-    : password (passwordarg)
+User::User(std::shared_ptr<Catalog> parentCatalog, const std::string &name,
+           std::string &password)
+    : password (password)
 {
-    if (parentCatalogarg->userName2Id.count(namearg))
+    if (parentCatalog->userName2Id.count(name))
     {
         id=-1;
         return;
     }
-    parentCatalog=parentCatalogarg;
+    parentCatalog=parentCatalog;
     getparents();
     id=parentCatalog->getnextuserid();
-    name=namearg;
+    name=name;
     parentCatalog->userName2Id[name]=id;
     parentCatalog->userid2User[id]=this;
 }

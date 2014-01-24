@@ -64,7 +64,7 @@ class Serdes
 {
 public:
     Serdes();
-    Serdes(size_t mv_sizearg);
+    Serdes(size_t mv_size);
     /** 
      * @brief create object to deserialize from an MDB_val
      *
@@ -75,9 +75,9 @@ public:
      * If the item is not in an LMDB database, and needs to be deleted when
      * finished, then set isreadonly to true.
      *
-     * @param valarg 
+     * @param val 
      */
-    Serdes(MDB_val &valarg);
+    Serdes(MDB_val &val);
     ~Serdes();
 
     // pods

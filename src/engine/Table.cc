@@ -35,17 +35,17 @@ Table::Table() : Metadata (), nextfieldid (-1)
     
 }
 
-Table::Table(std::shared_ptr<Schema> parentSchemaarg, const std::string &namearg) : nextfieldid (-1)
+Table::Table(std::shared_ptr<Schema> parentSchema, const std::string &name) : nextfieldid (-1)
 {
-    if (parentSchemaarg->parentCatalog->tableName2Id.count(namearg))
+    if (parentSchema->parentCatalog->tableName2Id.count(name))
     {
         id=-1;
         return;
     }
-    parentSchema=parentSchemaarg;
+    parentSchema=parentSchema;
     getparents();
     id=parentCatalog->getnexttableid();
-    name=namearg;
+    name=name;
     parentCatalog->tableName2Id[name]=id;
     parentCatalog->tableid2Table[id]=this;
     parentSchema->tableName2Id[name]=id;

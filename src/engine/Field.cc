@@ -382,11 +382,11 @@ Field::Field() :
 	defaultValue.nullify();
 }
 
-Field::Field(std::shared_ptr<Table> parentTablearg, const std::string& namearg, type_e typearg) :
+Field::Field(std::shared_ptr<Table> parentTable, const std::string& name, type_e type) :
 		Field() {
-	type = typearg;
+	type = type;
 
-	if (initializer(parentTablearg, namearg) == false) {
+	if (initializer(parentTable, name) == false) {
 		return;
 	}
 
@@ -430,56 +430,56 @@ Field::Field(std::shared_ptr<Table> parentTablearg, const std::string& namearg, 
 	}
 }
 
-Field::Field(std::shared_ptr<Table> parentTablearg, const std::string& namearg, type_e typearg,
-		int64_t arg1arg) :
+Field::Field(std::shared_ptr<Table> parentTable, const std::string& name, type_e type,
+		int64_t arg1) :
 		Field() {
-	type = typearg;
+	type = type;
 
-	if (initializer(parentTablearg, namearg) == false) {
+	if (initializer(parentTable, name) == false) {
 		return;
 	}
 
 	switch (type) {
 	case TYPE_NUMERIC:
-		precision = arg1arg;
+		precision = arg1;
 		scale = 0;
 		break;
 
 	case TYPE_DECIMAL:
-		precision = arg1arg;
+		precision = arg1;
 		scale = 0;
 		break;
 
 	case TYPE_CHARACTER:
-		size = arg1arg;
+		size = arg1;
 		break;
 
 	case TYPE_CHARACTER_VARYING:
-		size = arg1arg;
+		size = arg1;
 		break;
 
 	case TYPE_BIT:
-		size = arg1arg;
+		size = arg1;
 		break;
 
 	case TYPE_BIT_VARYING:
-		size = arg1arg;
+		size = arg1;
 		break;
 
 	case TYPE_TIME:
-		precision = arg1arg;
+		precision = arg1;
 		break;
 
 	case TYPE_TIMESTAMP:
-		precision = arg1arg;
+		precision = arg1;
 		break;
 
 	case TYPE_TIME_WITH_TIME_ZONE:
-		precision = arg1arg;
+		precision = arg1;
 		break;
 
 	case TYPE_TIMESTAMP_WITH_TIME_ZONE:
-		precision = arg1arg;
+		precision = arg1;
 		break;
 
 	default:
@@ -487,14 +487,14 @@ Field::Field(std::shared_ptr<Table> parentTablearg, const std::string& namearg, 
 	}
 }
 
-Field::Field(std::shared_ptr<Table> parentTablearg, const std::string& namearg, type_e typearg,
-		int64_t arg1arg, int64_t arg2arg) :
+Field::Field(std::shared_ptr<Table> parentTable, const std::string& name, type_e type,
+		int64_t arg1, int64_t arg2) :
 		Field() {
-	type = typearg;
-	precision = arg1arg;
-	scale = arg2arg;
+	type = type;
+	precision = arg1;
+	scale = arg2;
 
-	if (initializer(parentTablearg, namearg) == false) {
+	if (initializer(parentTable, name) == false) {
 		return;
 	}
 }
@@ -523,15 +523,15 @@ Field::~Field() {
 
 }
 
-bool Field::initializer(std::shared_ptr<Table> parentTablearg, const std::string& namearg) {
-	if (parentTablearg->fieldName2Id.count(namearg)) {
+bool Field::initializer(std::shared_ptr<Table> parentTable, const std::string& name) {
+	if (parentTable->fieldName2Id.count(name)) {
 		id = -1;
 		return false;
 	}
-	parentTable = parentTablearg;
+	parentTable = parentTable;
 	getparents();
 	id = parentTable->getnextfieldid();
-	name = namearg;
+	name = name;
 	parentTable->fieldName2Id[name] = id;
 	parentTable->fieldid2Field[id] = this;
 	defaultValue.nullify();

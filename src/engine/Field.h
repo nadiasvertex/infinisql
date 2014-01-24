@@ -320,7 +320,7 @@ public:
      * @param name field name
      * @param type field type
      */
-    Field(std::shared_ptr<Table> parentTablearg, const std::string& namearg, type_e typearg);
+    Field(std::shared_ptr<Table> parentTable, const std::string& name, type_e type);
     /** 
      * @brief create Field
      *
@@ -328,8 +328,8 @@ public:
      * @param type field type
      * @param arg1 parameter to create field
      */
-    Field(std::shared_ptr<Table> parentTablearg, const std::string& namearg, type_e typearg,
-          int64_t arg1arg);
+    Field(std::shared_ptr<Table> parentTable, const std::string& name, type_e type,
+          int64_t arg1);
     /** 
      * @brief create Field
      *
@@ -338,8 +338,8 @@ public:
      * @param arg1 1st parameter to create field
      * @param arg2 2nd parameter to create field
      */
-    Field(std::shared_ptr<Table> parentTablearg, const std::string& namearg, type_e typearg,
-          int64_t arg1arg, int64_t arg2arg);
+    Field(std::shared_ptr<Table> parentTable, const std::string& name, type_e type,
+          int64_t arg1, int64_t arg2);
     Field(const Field &orig);
     Field &operator= (const Field &orig);
     /** 
@@ -361,7 +361,7 @@ public:
      * 
      * @return 
      */
-    bool initializer(std::shared_ptr<Table> parentTablearg, const std::string& namearg);
+    bool initializer(std::shared_ptr<Table> parentTable, const std::string& name);
     /** 
      * @brief get metadata parent information from parentTable
      *
