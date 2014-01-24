@@ -29,9 +29,8 @@ if ARGUMENTS.get('analyze') == "1":
 else:
     if ARGUMENTS.get('gcc') != "1":
         env.Replace(CXX=which('clang++'))
-    else:
-        env.Replace(CXX=None)
-    
+        #env.Replace(CC=which('clang'))
+        
 if ARGUMENTS.get('asan') != "1":
     env.Append(CXXFLAGS='-g -O3 -finline-functions ')
 else:
@@ -69,5 +68,5 @@ if not env.GetOption('clean'):
     env = conf.Finish()
 
 env.Clean('distclean', ['.sconsign.dblite', '.sconf_temp', 'config.log'])
-libraries = [env.SConscript(['src/decimal/SConscript', 'src/engine/SConscript',], exports='env')]
+libraries = [env.SConscript(['src/engine/SConscript', 'src/decimal/SConscript', ], exports='env')]
 env.SConscript(['src/SConscript', 'tests/SConscript'], exports=['env', 'libraries'])
