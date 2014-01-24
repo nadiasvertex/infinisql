@@ -40,10 +40,10 @@ Schema::Schema(std::shared_ptr<Catalog> parentCatalog, const std::string &name)
         id=-1;
         return;
     }
-    parentCatalog=parentCatalog;
+    this->parentCatalog=parentCatalog;
     getparents();
     id=parentCatalog->getnextschemaid();
-    name=name;
+    this->name=name;
     parentCatalog->schemaName2Id[name]=id;
     parentCatalog->schemaid2Schema[id]=this;    
 }

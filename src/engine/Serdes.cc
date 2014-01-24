@@ -45,7 +45,7 @@ Serdes::Serdes(size_t mv_size) : Serdes()
     }
 }
 
-Serdes::Serdes(MDB_val &val) : isreadonly(true), pos(0), val(valarg)
+Serdes::Serdes(MDB_val &val) : isreadonly(true), pos(0), val(val)
 {
     
 }

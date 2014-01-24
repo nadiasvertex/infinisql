@@ -42,10 +42,10 @@ Table::Table(std::shared_ptr<Schema> parentSchema, const std::string &name) : ne
         id=-1;
         return;
     }
-    parentSchema=parentSchema;
+    this->parentSchema=parentSchema;
     getparents();
     id=parentCatalog->getnexttableid();
-    name=name;
+    this->name=name;
     parentCatalog->tableName2Id[name]=id;
     parentCatalog->tableid2Table[id]=this;
     parentSchema->tableName2Id[name]=id;

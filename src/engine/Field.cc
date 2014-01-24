@@ -384,7 +384,7 @@ Field::Field() :
 
 Field::Field(std::shared_ptr<Table> parentTable, const std::string& name, type_e type) :
 		Field() {
-	type = type;
+	this->type = type;
 
 	if (initializer(parentTable, name) == false) {
 		return;
@@ -433,7 +433,7 @@ Field::Field(std::shared_ptr<Table> parentTable, const std::string& name, type_e
 Field::Field(std::shared_ptr<Table> parentTable, const std::string& name, type_e type,
 		int64_t arg1) :
 		Field() {
-	type = type;
+	this->type = type;
 
 	if (initializer(parentTable, name) == false) {
 		return;
@@ -490,7 +490,7 @@ Field::Field(std::shared_ptr<Table> parentTable, const std::string& name, type_e
 Field::Field(std::shared_ptr<Table> parentTable, const std::string& name, type_e type,
 		int64_t arg1, int64_t arg2) :
 		Field() {
-	type = type;
+	this->type = type;
 	precision = arg1;
 	scale = arg2;
 
@@ -528,10 +528,10 @@ bool Field::initializer(std::shared_ptr<Table> parentTable, const std::string& n
 		id = -1;
 		return false;
 	}
-	parentTable = parentTable;
+	this->parentTable = parentTable;
 	getparents();
 	id = parentTable->getnextfieldid();
-	name = name;
+	this->name = name;
 	parentTable->fieldName2Id[name] = id;
 	parentTable->fieldid2Field[id] = this;
 	defaultValue.nullify();

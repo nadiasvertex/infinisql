@@ -42,10 +42,10 @@ Index::Index(std::shared_ptr<Table> parentTable, const std::string &name)
         id=-1;
         return;
     }
-    parentTable=parentTable;
+    this->parentTable=parentTable;
     getparents();
     id=parentCatalog->getnextindexid();
-    name=name;
+    this->name=name;
     parentCatalog->indexName2Id[name]=id;
     parentCatalog->indexid2Index[id]=this;
     parentSchema->indexName2Id[name]=id;

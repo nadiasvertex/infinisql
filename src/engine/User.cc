@@ -43,10 +43,10 @@ User::User(std::shared_ptr<Catalog> parentCatalog, const std::string &name,
         id=-1;
         return;
     }
-    parentCatalog=parentCatalog;
+    this->parentCatalog=parentCatalog;
     getparents();
     id=parentCatalog->getnextuserid();
-    name=name;
+    this->name=name;
     parentCatalog->userName2Id[name]=id;
     parentCatalog->userid2User[id]=this;
 }
