@@ -28,14 +28,14 @@ if ARGUMENTS.get('analyze') == "1":
     env["ENV"].update(x for x in os.environ.items() if x[0].startswith("CCC_"))
 else:
     if ARGUMENTS.get('gcc') != "1":
-        env.Replace(CXX=which('clang++'))
-        #env.Replace(CC=which('clang'))
+        env.Replace(CXX='clang++')
+        env.Replace(CC='clang')
         
 if ARGUMENTS.get('asan') != "1":
     env.Append(CXXFLAGS='-g -O3 -finline-functions ')
 else:
-    env.Append(CXXFLAGS="-g -fsanitize=address")
-    env.Append(LINKFLAGS="-fsanitize=address")
+    env.Append(CXXFLAGS=" -g -fsanitize=address ")
+    env.Append(LINKFLAGS=" -fsanitize=address ")
 
 env.Append(CPPPATH=["#deps/include", "#src"])
 env.Append(LIBPATH="#deps/lib")
@@ -48,7 +48,7 @@ if not env.GetOption('clean'):
     # Check for clang first, if not back off to g++
     if not conf.CheckCXX():
         print("Unable to find clang, checking for g++ instead.")
-        env.Replace(CXX=which('g++'))
+        env.Replace(CXX='g++')
         print "CXX: ", env['CXX']
         if not conf.CheckCXX():
             print "but CXX is: ", env['CXX']
@@ -61,9 +61,11 @@ if not env.GetOption('clean'):
     if not conf.CheckCXXHeader('lmdb.h'):
        print 'Did not find lmdb header.'
        Exit(1)
-    if not conf.CheckLib('lmdb'):
-       print 'Did not find lmdb library.'
-       Exit(1)
+    # This breaks when selecting clang as the CC, even though compiling
+    # actually works fine.
+    #if not conf.CheckLib('lmdb'):
+    #   print 'Did not find lmdb library.'
+    #   Exit(1)
        
     env = conf.Finish()
 
