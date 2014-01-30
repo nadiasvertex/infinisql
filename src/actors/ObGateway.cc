@@ -18,24 +18,27 @@
  */
 
 /**
- * @file   Topology.h
+ * @file   ObGateway.cc
  * @author Mark Travis <mtravis15432+src@gmail.com>
- * @date   Wed Jan 22 09:05:35 2014
+ * @date   Sat Jan 25 09:10:25 2014
  * 
- * @brief Topology class has all of the actors, their types, and dynamic
- * configuration values. Each actor maintains a Topology object which gives
- * it a common view for the whole node and, as necessary, the whole cluster.
+ * @brief  Outbound Gateway actor. Counterpart to IbGateway. Receives messages
+ * from actors on current node bound for remote nodes. Sends them over the
+ * network to IbGateway.
  */
 
-#ifndef INFINISQLTOPOLOGY_H
-#define INFINISQLTOPOLOGY_H
+#include "ObGateway.h"
 
-#include "global.h"
-
-class Topology
+ObGateway::ObGateway(Actor::identity_s identity)
+    : Actor(identity)
 {
-public:
-    Topology();
-};
+}
 
-#endif // INFINISQLTOPOLOGY_H
+void ObGateway::operator()()
+{
+
+    while(1)
+    {
+        sleep(10);
+    }
+}

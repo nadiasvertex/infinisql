@@ -30,12 +30,12 @@ else:
     if ARGUMENTS.get('gcc') != "1":
         env.Replace(CXX='clang++')
         env.Replace(CC='clang')
-        
+    
 if ARGUMENTS.get('asan') != "1":
     env.Append(CXXFLAGS='-g -O3 -finline-functions ')
 else:
-    env.Append(CXXFLAGS=" -g -fsanitize=address ")
-    env.Append(LINKFLAGS=" -fsanitize=address ")
+    env.Append(CXXFLAGS="-g -fsanitize=address")
+    env.Append(LINKFLAGS="-fsanitize=address")
 
 env.Append(CPPPATH=["#deps/include", "#src"])
 env.Append(LIBPATH="#deps/lib")
@@ -48,10 +48,9 @@ if not env.GetOption('clean'):
     # Check for clang first, if not back off to g++
     if not conf.CheckCXX():
         print("Unable to find clang, checking for g++ instead.")
-        env.Replace(CXX='g++')
-        print "CXX: ", env['CXX']
+        env.Replace(CXX=which('g++'))
+        env.Append(CXXFLAGS="-mcx16 ")
         if not conf.CheckCXX():
-            print "but CXX is: ", env['CXX']
             print('Unable to find a configured C++ compiler.')
             Exit(1)
     else:
@@ -70,5 +69,5 @@ if not env.GetOption('clean'):
     env = conf.Finish()
 
 env.Clean('distclean', ['.sconsign.dblite', '.sconf_temp', 'config.log'])
-libraries = [env.SConscript(['src/engine/SConscript', 'src/decimal/SConscript', ], exports='env')]
+libraries = [env.SConscript(['src/actors/SConscript', 'src/engine/SConscript', 'src/decimal/SConscript', 'src/mbox/SConscript' ], exports='env')]
 env.SConscript(['src/SConscript', 'tests/SConscript'], exports=['env', 'libraries'])
