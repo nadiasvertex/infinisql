@@ -92,6 +92,9 @@ def protobuf(archive_path):
     os.chdir(source_path)
     os.system("./configure && make all")
     copy_bin(os.path.join(source_path, "src", "protoc"))
+    copy_lib(os.path.join(source_path, "src", ".libs", "libprotoc.so"))
+    copy_lib(os.path.join(source_path, "src", ".libs", "libprotobuf.so"))
+    copy_inc(os.path.join(source_path, "src", "google"), "google")
 
 #===============================================================================
 packages = [("https://www.threadingbuildingblocks.org/sites/default/files/software_releases/source/tbb42_20131118oss_src.tgz",

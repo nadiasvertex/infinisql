@@ -1,0 +1,16 @@
+message Assignment {
+    enum RoleType {
+        LEADER=1;
+        BACKUP=2;
+    }
+    
+    enum Role {
+        SCHEMA_MANAGER=1;
+        TOPOLOGY_MANAGER=2;
+    }
+    
+    required RoleType role_type = 1;
+    required Role role = 2;
+    required int32 node_id = 3;
+}
+

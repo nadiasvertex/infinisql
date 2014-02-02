@@ -9,7 +9,7 @@ def which(file):
 def abs_path(paths):
     return [Dir(os.path.join(os.getcwd(), path)) for path in paths]
 
-env = DefaultEnvironment()
+env = DefaultEnvironment(tools=["default", "protoc"])
 if ARGUMENTS.get('verbose') != "1":
     env['CCCOMSTR'] = "Compiling $TARGET"
     env['CXXCOMSTR'] = "Compiling $TARGET"
@@ -40,6 +40,7 @@ else:
 env.Append(CPPPATH=["#deps/include", "#src"])
 env.Append(LIBPATH="#deps/lib")
 env.Append(CXXFLAGS='-std=c++11 -Wall -Wno-deprecated -Wno-write-strings ')
+env.Replace(PROTOC="deps/bin/protoc")
 
 if not env.GetOption('clean'):
     # Perform configuration checks
@@ -69,7 +70,8 @@ if not env.GetOption('clean'):
     env = conf.Finish()
 
 env.Clean('distclean', ['.sconsign.dblite', '.sconf_temp', 'config.log'])
-libraries = [env.SConscript(['src/actors/SConscript', 
+libraries = [env.SConscript(['src/configuration/SConscript',
+                             'src/actors/SConscript', 
                              'src/engine/SConscript',  
                              'src/mbox/SConscript', 
                              'src/decimal/SConscript', 
