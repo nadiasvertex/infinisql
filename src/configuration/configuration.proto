@@ -1,16 +1,52 @@
-message Assignment {
-    enum RoleType {
-        LEADER=1;
-        BACKUP=2;
+package infinisql.configuration;
+
+message Request {
+    enum RequestType {
+        STATUS = 0;
+        ASSIGNMENT = 1;
     }
     
-    enum Role {
-        SCHEMA_MANAGER=1;
-        TOPOLOGY_MANAGER=2;
+    enum RequestMatch {
+        ALL = 0;      // All assignments known to the manager.
+        SPECIFIC = 1; // The specific node specified in the request.
     }
-    
-    required RoleType role_type = 1;
-    required Role role = 2;
-    required int32 node_id = 3;
+
+    required RequestType request_type = 1;
+    required RequestMatch request_match = 2; 
+    optional int32 node_id = 3; 
 }
 
+message AssignmentResponse {
+    message Assignment {
+        enum RoleType {
+            LEADER=1;
+            BACKUP=2;
+        }
+        
+        enum Role {
+            SCHEMA_MANAGER=1;
+            TOPOLOGY_MANAGER=2;
+        }
+        
+        required RoleType role_type = 1;
+        required Role role = 2;
+        required int32 node_id = 3;
+    }
+    
+    repeated Assignment assignments = 1;
+}
+
+message StatusResponse {
+
+    message Status {
+        enum StatusType {
+            UP=1;
+            DOWN=2;
+        }
+        
+        required StatusType status_type = 1;
+        required int32 node_id = 2;
+    }
+    
+    repeated Status status = 1;
+}
