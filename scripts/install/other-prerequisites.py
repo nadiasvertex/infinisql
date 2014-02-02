@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import shutil
+import stat
 import sys
 
 from glob import glob
@@ -30,12 +31,14 @@ def copy_simple(tag, base_folder, from_path):
    if not os.path.exists(base_folder):
       os.makedirs(base_folder)
    target_name = os.path.split(from_path)[1]
-   target = os.path.join(lib_folder, target_name)
+   target = os.path.join(base_folder, target_name)
    print("Installing %s: %s -> %s" %(tag, from_path, target))
    shutil.copyfile(from_path, target)
+   return target
 
 def copy_bin(from_path):
-   copy_simple("binary", bin_folder, from_path)
+   target = copy_simple("binary", bin_folder, from_path)
+   os.chmod(target, stat.S_IXUSR | stat.S_IRUSR | stat.S_IWUSR)
 
 def copy_lib(from_path):
    copy_simple("library", lib_folder, from_path)
@@ -82,13 +85,21 @@ def coco(archive_path):
    copy_var(os.path.join(source_path, "Scanner.frame"), "coco")
    copy_var(os.path.join(source_path, "Parser.frame"), "coco")
          
-    
+def protobuf(archive_path):
+    archive_folder, archive_name = os.path.split(archive_path)
+    os.system('tar -C "%s" -xjf "%s"' % (archive_folder, archive_path))
+    source_path = os.path.join(archive_folder, "protobuf-2.5.0")
+    os.chdir(source_path)
+    os.system("./configure && make all")
+    copy_bin(os.path.join(source_path, "src", "protoc"))
+
 #===============================================================================
 packages = [("https://www.threadingbuildingblocks.org/sites/default/files/software_releases/source/tbb42_20131118oss_src.tgz",
              tbb),
             ("https://gitorious.org/mdb/mdb/archive/aa3463ec7c5e979420b13c8f37caa377ed2c1cf1.tar.gz",
              lmdb),
             ("http://www.ssw.uni-linz.ac.at/Coco/CPP/CocoSourcesCPP.zip", coco),
+            ("http://protobuf.googlecode.com/files/protobuf-2.5.0.tar.bz2", protobuf),
             ]
 
 #===============================================================================
