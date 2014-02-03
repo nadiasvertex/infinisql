@@ -30,6 +30,7 @@ public:
 	void request_assignments();
 	void request_assignments_for(nodeid id);
 
+	void process();
 };
 
 } // end namespace configuration

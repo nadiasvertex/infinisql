@@ -27,34 +27,40 @@
 
 #include "AdminListener.h"
 #include <zmq.h>
+#include "../configuration/reactor.h"
 
 AdminListener::AdminListener(Actor::identity_s identity)
-    : Actor(identity), zmqcontext(NULL), zmqresponder(NULL)
+    : Actor(identity), zmq_ctx(nullptr), zmq_requestor(nullptr)
 {
 }
 
 void AdminListener::operator()()
 {
-    void *zmqcontext=zmq_ctx_new();
-    if (zmqcontext==NULL)
+    zmq_ctx = zmq_ctx_new();
+    if (zmq_ctx==nullptr)
     {
         LOG("can't create 0mq context, exiting");
         exit(1);
     }
-    zmqresponder=zmq_socket(zmqcontext, ZMQ_REP);
-    if (zmqresponder==NULL)
+
+    zmq_requestor = zmq_socket(zmq_ctx, ZMQ_REQ);
+    if (zmq_requestor==nullptr)
     {
         LOG("can't create 0mq socket, exiting");
         exit(1);
     }
-    if (zmq_bind(zmqresponder, identity.zmqhostport.c_str())==-1)
-    {
-        LOG("can't zmq_bind, exiting");
-        exit(1);
+
+    std::string address { "tcp://localhost:" };
+    address.append(identity.zmqhostport);
+
+    if (zmq_connect(zmq_requestor, address.c_str())!=0) {
+    	LOG("can't connect 0mq socket to configuration manager, exiting");
+    	exit(1);
     }
 
-    while(1)
-    {
-        sleep(10);
+    infinisql::configuration::reactor r(zmq_requestor);
+
+    while(true) {
+        r.process();
     }
 }

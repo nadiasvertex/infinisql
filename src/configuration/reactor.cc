@@ -1,5 +1,7 @@
 #include "reactor.h"
+#include <chrono>
 #include <memory>
+#include <thread>
 
 namespace infinisql {
 namespace configuration {
@@ -53,6 +55,10 @@ void reactor::request_assignments_for(nodeid id) {
 	_request(r);
 }
 
+void reactor::process() {
+	std::this_thread::sleep_for(std::chrono::seconds(1));
+	return;
+}
 
 } // end namespace configuration
 } // end namespace infinisql

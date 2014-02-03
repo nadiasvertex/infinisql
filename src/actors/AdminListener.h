@@ -36,8 +36,8 @@ public:
     AdminListener(Actor::identity_s identity);
     void operator()();
 
-    void *zmqcontext;
-    void *zmqresponder;
+    void *zmq_ctx;
+    void *zmq_requestor;
 };
 
 #endif // INFINISQLADMINLISTENER_H
