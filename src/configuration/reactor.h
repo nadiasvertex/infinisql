@@ -21,11 +21,14 @@ class reactor {
 	void *socket;
 
 protected:
-	void _request(const std::string &data);
+	void _request(const Request& request);
+	Request _create_request(const Request::RequestType request_type);
 public:
 	reactor(void *socket);
 	void request_status();
 	void request_status_for(nodeid id);
+	void request_assignments();
+	void request_assignments_for(nodeid id);
 
 };
 
