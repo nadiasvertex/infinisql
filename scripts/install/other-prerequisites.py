@@ -90,7 +90,10 @@ def protobuf(archive_path):
     os.system('tar -C "%s" -xjf "%s"' % (archive_folder, archive_path))
     source_path = os.path.join(archive_folder, "protobuf-2.5.0")
     os.chdir(source_path)
-    os.system("./configure && make all")
+    if not os.path.exists(os.path.join(source_path, "Makefile")):
+       os.system("./configure")
+    
+    os.system("make all")
     copy_bin(os.path.join(source_path, "src", "protoc"))
     copy_lib(os.path.join(source_path, "src", ".libs", "libprotoc.so"))
     copy_lib(os.path.join(source_path, "src", ".libs", "libprotobuf.so"))
