@@ -3038,7 +3038,7 @@ decFloat * decFloatQuantize(decFloat *result,
         case DEC_ROUND_FLOOR: {
           // same as _UP for negative numbers, and as _DOWN for positive
           // [negative reround cannot occur on 0]
-          if (sourhil&DECFLOAT_Sign && reround>0) bump=1;
+          if ((sourhil&DECFLOAT_Sign) && reround>0) bump=1;
           break;} // r-f
         case DEC_ROUND_05UP: {
           if (reround>0) { // anything out there is 'sticky'

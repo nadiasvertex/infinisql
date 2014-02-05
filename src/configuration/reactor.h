@@ -23,6 +23,8 @@ class reactor {
 protected:
 	void _request(const Request& request);
 	Request _create_request(const Request::RequestType request_type);
+
+	void _check_receive_status();
 public:
 	reactor(void *socket);
 	void request_status();

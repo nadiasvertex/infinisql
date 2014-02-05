@@ -41,6 +41,7 @@ env.Append(CPPPATH=["#deps/include", "#src"])
 env.Append(LIBPATH="#deps/lib")
 env.Append(CXXFLAGS='-std=c++11 -Wall -Wno-deprecated -Wno-write-strings ')
 env.Replace(PROTOC="deps/bin/protoc")
+env.Append(LD_LIBRARY_PATH="#deps/lib")
 
 if not env.GetOption('clean'):
     # Perform configuration checks
