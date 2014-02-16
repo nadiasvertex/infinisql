@@ -1,7 +1,13 @@
 Import(['env', 'libraries'])
 
 isql_env = env.Clone()
-isql_env.Append(LIBS=libraries + ['protobuf', 'tbb', 'lmdb', 'pthread', 'zmq'])
+isql_env.Append(LIBS=libraries +\ 
+               ['protobuf', 
+                'tbb', 
+                'lmdb', 
+                'pthread', 
+                'zmq', 
+                'lz4'])
           
 server_source = ['main.cc']
 

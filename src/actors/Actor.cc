@@ -27,8 +27,12 @@
 
 #include "Actor.h"
 
-Actor::Actor(identity_s identity) : identity(identity)
+//std::vector< std::atomic<int> > socketAffinity;
+std::atomic<int64_t> *socketAffinity;
+
+Actor::Actor(identity_s identity) : identity(identity), msgrcv(nullptr)
 {
+    myTopology.update();
 }
 
 void Actor::operator()() const

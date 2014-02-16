@@ -47,7 +47,10 @@ public:
     enum topic_e : uint8_t
     {
         TOPIC_NONE=0,
-            TOPIC_BATCH
+            TOPIC_SOCKET,
+            TOPIC_SOCKETCONNECTED,
+            TOPIC_BATCH,
+            TOPIC_SERIALIZED
     };
     /** 
      * @brief type of message
@@ -57,7 +60,8 @@ public:
         PAYLOAD_NONE=0,
             PAYLOAD_MESSAGE,
             PAYLOAD_SOCKET,
-            PAYLOAD_BATCH
+            PAYLOAD_BATCH,
+            PAYLOAD_SERIALIZED
             };
     /** 
      * @brief address for message delivery
@@ -150,7 +154,7 @@ public:
 
     MessageSocket();
     MessageSocket(topic_e topic, int16_t destnodeid, int sockfd,
-                  uint32_t events, listenertype_e listenertype);
+                  uint32_t events);
 
     void ser(Serdes &output);
     size_t sersize();
@@ -173,6 +177,14 @@ public:
 
     int16_t nmsgs;
     messagebatch_s messagebatch[OBGWMSGBATCHSIZE];
+};
+
+class MessageSerialized : public Message
+{
+public:
+    MessageSerialized(const Serdes &serializeddata);
+
+    Serdes serializeddata;
 };
 
 #endif // INFINISQLMESSAGE_H

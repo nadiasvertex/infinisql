@@ -60,7 +60,7 @@ Serdes *Message::sermsg()
     {
     case PAYLOAD_MESSAGE:
         serobj=new (std::nothrow) Serdes(sersize());
-        if (serobj != NULL)
+        if (serobj != nullptr)
         {
             ser(*serobj);
         }
@@ -70,7 +70,7 @@ Serdes *Message::sermsg()
     {
         MessageSocket &msgRef=*(MessageSocket *)this;
         serobj=new (std::nothrow) Serdes(msgRef.sersize());
-        if (serobj != NULL)
+        if (serobj != nullptr)
         {
             msgRef.ser(*serobj);
         }
@@ -131,9 +131,8 @@ MessageSocket::MessageSocket()
 }
 
 MessageSocket::MessageSocket(topic_e topic, int16_t destnodeid, int sockfd,
-                             uint32_t events, listenertype_e listenertype)
-    : Message(topic, PAYLOAD_SOCKET, destnodeid),
-      socketdata({sockfd, events, listenertype})
+                             uint32_t events)
+    : Message(topic, PAYLOAD_SOCKET, destnodeid), socketdata({sockfd, events})
 {
     
 }
@@ -163,4 +162,12 @@ MessageBatch::MessageBatch(int16_t destnodeid)
     : Message(TOPIC_BATCH, PAYLOAD_BATCH, destnodeid), nmsgs(0), messagebatch()
 {
     
+}
+
+MessageSerialized::MessageSerialized(const Serdes &serializeddata)
+    : serializeddata(serializeddata)
+{
+    memcpy(&message, serializeddata.val.mv_data, sizeof(message));
+    message.topic=TOPIC_SERIALIZED;
+    message.payloadtype=PAYLOAD_SERIALIZED;
 }

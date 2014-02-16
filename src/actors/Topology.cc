@@ -29,7 +29,36 @@
 
 #include "Topology.h"
 
+Topology nodeTopology;
+std::mutex nodeTopologyMutex;
+std::atomic<int> nodeTopologyVersion;
+
 Topology::Topology()
 {
     
+}
+
+Topology::~Topology()
+{
+    
+}
+
+TopologyDistinct::TopologyDistinct() : topologyVersion(0)
+{
+    
+}
+
+bool TopologyDistinct::update()
+{
+    if (topologyVersion != nodeTopologyVersion)
+    {
+        nodeTopologyMutex.lock();
+        *(Topology *)this=nodeTopology;
+        nodeTopologyMutex.unlock();
+
+        topologyVersion=nodeTopologyVersion;
+        return true;
+    }
+
+    return false;
 }

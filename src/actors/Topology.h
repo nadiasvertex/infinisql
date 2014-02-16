@@ -32,10 +32,45 @@
 
 #include "../engine/global.h"
 
+class Mbox;
+
 class Topology
 {
-public:    
+public:
     Topology();
+    virtual ~Topology();
+
+    int16_t nodeid;
+    /**
+     * @todo pattern for adding a localTransactionAgent:
+     * 1) after adding it, and releasing the nodeTopologyMutex
+     * 2) increment localTransactionAgentsVersion
+     *
+     * that tells Listener to copy nodeTopology--Listener, doesn't
+     * read it's Mbox, so it needs to know about that change in
+     * Topology every time a new socket is accept()ed
+     */
+    std::vector<Mbox *> localTransactionAgents;
+    std::vector<Mbox *> actoridToMboxes;
+    // nodeidToIbGateway[nodeid]={"host", "port"};
+    std::map< int16_t, std::pair<std::string, std::string> > nodeidToIbGateway;
 };
+
+/** 
+ * @brief TopologyDistinct is a specific Actor's Topology
+ */
+class TopologyDistinct : public Topology
+{
+public:
+    TopologyDistinct();
+
+    bool update();
+
+    int topologyVersion;
+};
+
+extern Topology nodeTopology;
+extern std::mutex nodeTopologyMutex;
+extern std::atomic<int> nodeTopologyVersion;
 
 #endif // INFINISQLTOPOLOGY_H

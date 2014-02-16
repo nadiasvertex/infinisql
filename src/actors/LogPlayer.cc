@@ -18,38 +18,24 @@
  */
 
 /**
- * @file   IbGateway.h
+ * @file   LogPlayer.cc
  * @author Mark Travis <mtravis15432+src@gmail.com>
- * @date   Sat Jan 25 08:36:23 2014
+ * @date   Fri Feb  7 18:07:33 2014
  * 
- * @brief  Inbound Gateway actor. Counterpart to ObGateway. Receives messages
- * over the network from remote senders and distributes them to their
- * destination actors on the current node.
+ * @brief  receives replicated transaction logs and applies them to a replica
  */
 
-#ifndef INFINISQLIBGATEWAY_H
-#define INFINISQLIBGATEWAY_H
+#include "LogPlayer.h"
 
-#include "Actor.h"
-
-class IbGateway : public Actor
+LogPlayer::LogPlayer(Actor::identity_s identity) : Actor(identity)
 {
-public:
-    IbGateway(Actor::identity_s identity);
-    ~IbGateway();
-    void operator()();
+   
+}
 
-    /** 
-     * @brief decompress and distribute incoming messages
-     *
-     * @param buf bufer to read from
-     * @param bufsize size of buffer
-     */
-    void inbufhandler(const char *buf, size_t bufsize);
-
-    char *inbuf;
-    char *dcstrsmall;
-    std::unordered_map<int, std::string> pendingReads;
-};
-
-#endif // INFINISQLIBGATEWAY_H
+void LogPlayer::operator()()
+{
+    while(1)
+    {
+        sleep(10);
+    }
+}

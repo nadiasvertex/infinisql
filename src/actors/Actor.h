@@ -28,11 +28,17 @@
 #ifndef INFINISQLACTOR_H
 #define INFINISQLACTOR_H
 
+#include <thread>
 #include "../mbox/Mbox.h"
 #include "../engine/global.h"
 #include "Topology.h"
 
+#define GWBUFSIZE 16777216
+#define SERIALIZEDMAXSIZE   1048576
+
 class Mbox;
+
+extern std::atomic<int64_t> *socketAffinity;
 
 class Actor
 {
@@ -49,12 +55,16 @@ public:
         std::string zmqhostport;
         int sockfd;
         MDB_env *env;
+        std::string transactionlogpath;
     };
+
     Actor(identity_s identity);
     void operator()() const;
     virtual ~Actor();
 
     identity_s identity;
+    Message *msgrcv;
+    TopologyDistinct myTopology;
 };
 
 #endif // INFINISQLACTOR_H

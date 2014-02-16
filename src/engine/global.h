@@ -39,15 +39,32 @@
 #include <ostream>
 #include <sstream>
 #include <string>
+#include <vector>
+#include <map>
 #include <unordered_map>
+#include <system_error>
+#include <functional>
+#include <mutex>
+#include <atomic>
+#include <utility>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <lmdb.h>
+#include <lz4.h>
 #ifndef _BSD_SOURCE
 #define _BSD_SOURCE
 #endif
 #include <endian.h>
 #include <sys/epoll.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+#ifndef __USE_POSIX
+#define __USE_POSIX
+#endif
+#include <netdb.h>
+#include <fcntl.h>
 
 using namespace std;
 using std::string;
@@ -55,6 +72,8 @@ using std::string;
 extern std::ofstream logfile;
 
 #define LOG(...) logfile << __FILE__ << " " << __LINE__ << " errno: " << errno << " '" << strerror(errno) << "' " << __VA_ARGS__ << std::endl
+#define IBGWRCVBUF 16777216
+#define NUMSOCKETS 1048576
 
 /**
  * @todo this should go in the generated header with common symbol
@@ -73,6 +92,8 @@ enum actortypes_e
     ACTOR_LISTENER,
     ACTOR_ADMIN_LISTENER
 };
+
+void setprio();
 
 /* InfiniSQL headers that most, or all parts of the project need */
 #include "../mbox/Serdes.h"
