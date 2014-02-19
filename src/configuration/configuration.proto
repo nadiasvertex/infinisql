@@ -1,63 +1,117 @@
 package infinisql.configuration;
 
+// enums
+
+enum Actor {
+    ACTOR_NONE = 0;
+    ACTOR_IB_GATEWAY = 1;
+    ACTOR_LISTENER = 2;
+    ACTOR_LOG_PLAYER = 3;
+    ACTOR_OB_GATEWAY = 4;
+    ACTOR_PARTITION_WRITER = 5;
+    ACTOR_TOPOLOGY_MANAGER = 6;
+    ACTOR_TRANSACTION_AGENT = 7;
+    ACTOR_TRANSACTION_LOGGER = 8;
+    ACTOR_USER_SCHEMA_MANAGER = 9;
+}
+
+enum Sync {
+    SYNC_NONE = 0;
+    SYNC_SYNC = 1;
+    SYNC_ASYNC = 2;
+    SYNC_NOSYNC = 3;
+}
+
+// messages
+message ResponseData {
+    required int32 somesuch = 1;
+}
+
 message Request {
-    enum RequestType {
-        STATUS = 0;
-        ASSIGNMENT = 1;
+    enum Cmd {
+        CMD_NONE = 0;
+        CMD_ADD_NODE = 1;
+        CMD_ADD_PARTITION = 2;
+        CMD_ADD_PARTITION_GROUP = 3;
+        CMD_CHANGE_MANAGER = 4;
+        CMD_CHANGE_REPLICA = 5;
+        CMD_DELETE_PARTITION = 6;
+        CMD_DELETE_VERSION = 7;
+        CMD_FINISH_AND_ABORT_TRANSACTIONS = 8;
+        CMD_FINISH_TRANSACTIONS = 9;
+        CMD_GET_CONFIG = 10;
+        CMD_NEW_PARTITION = 11;
+        CMD_NODE_PROBLEM = 12;
+        CMD_NOTIFY_WHEN_LOG_COMMITTED = 13;
+        CMD_NOTIFY_WHEN_LOG_SENT = 14;
+        CMD_PERSIST_PARTITION = 15;
+        CMD_RELAYOUT = 16;
+        CMD_REMOVE_NODE = 17;
+        CMD_REPLICATE_PARTITION = 18;
+        CMD_SET_NODE_TYPE = 19;
+        CMD_SET_SYNC = 20;
+        CMD_START = 21;
+        CMD_START_PARTITION = 22;
+        CMD_START_TRANSACTION_LOG = 23;
+        CMD_START_TRANSACTIONS = 24;
+        CMD_STOP = 25;
+        CMD_STOP_TRANSACTION_LOG = 26;
+        CMD_STOP_NODE = 27;
+        CMD_STOP_PARTITION = 28;
+        CMD_STOP_SYNC = 29;
+        CMD_SYNC_PARTITION = 30;
     }
     
-    enum RequestMatch {
-        ALL = 0;      // All assignments known to the manager.
-        SPECIFIC = 1; // The specific node specified in the request.
-    }
+    required Cmd cmd = 1;
+    required int32 command_id = 27;
+    
+    optional Actor actor = 2;
+    
+    optional int32 dbs = 3;
+    optional int32 dest_node_id = 4;
+    optional int32 dest_partition_id = 5;
+    optional int32 partition_group_id = 6;
+    optional int32 instance = 7; 
+    optional int32 log_player_id = 8;
+    optional int32 member_id = 9;
+    optional int32 node_id = 10;
+    repeated int32 node_ids = 11;
+    optional int32 partition_id = 12;
+    optional int32 readers = 13;
+    optional int32 replica_id = 14;
+    optional int32 segment_id = 15;
+    optional int64 size = 16;
+    optional int32 src_partition_id = 17;
+    optional int32 version_id = 18;
 
-    required RequestType request_type = 1;
-    required RequestMatch request_match = 2; 
-    optional int32 node_id = 3; 
+    required string host = 19;
+    required string partition_group_name = 20;
+    required string path = 21;
+    required string port = 22;
+
+    optional bool is_active = 23;
+    optional bool is_sync = 24;
+    optional bool is_true = 25;
+
+    required Sync sync = 26;
 }
 
 message Response {
-    enum ResponseType {
-        STATUS = 0;
-        ASSIGNMENT = 1;
-    }
-
-    message AssignmentResponse {
-        message Assignment {
-            enum RoleType {
-                LEADER=1;
-                BACKUP=2;
-            }
-            
-            enum Role {
-                SCHEMA_MANAGER=1;
-                TOPOLOGY_MANAGER=2;
-            }
-            
-            required RoleType role_type = 1;
-            required Role role = 2;
-            required int32 node_id = 3;
-        }
-        
-        repeated Assignment assignments = 1;
+    enum Status {
+        STATUS_NONE = 0;
+        STATUS_OK = 1;
+        STATUS_NOK = 2;
     }
     
-    message StatusResponse {
-    
-        message Status {
-            enum StatusType {
-                UP=1;
-                DOWN=2;
-            }
-            
-            required StatusType status_type = 1;
-            required int32 node_id = 2;
-        }
-        
-        repeated Status status = 1;
+    enum Reason {
+        REASON_NONE = 0;
+        REASON_GENERIC = 1;
+        REASON_UNKNOWN_REQUEST = 2;
+        REASON_NOT_READY = 3;
     }
     
-    required ResponseType response_type = 1;
-    optional StatusResponse status = 2;
-    optional AssignmentResponse assignment = 3;
+    optional Status status = 1;
+    optional int32 command_id = 2;
+    optional ResponseData data = 3;
+    optional Reason reason = 4;
 }

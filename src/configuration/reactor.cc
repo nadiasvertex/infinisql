@@ -8,9 +8,9 @@ namespace infinisql {
 namespace configuration {
 
 void
-reactor::_request(const Request& request) {
+reactor::_respond(const Response& response) {
 	std::string data;
-	request.SerializeToString(&data);
+	response.SerializeToString(&data);
 
 	zmq_msg_t msg;
 	zmq_msg_init_size(&msg, data.size());
@@ -30,45 +30,37 @@ void reactor::_check_receive_status() {
 	zmq_recvmsg(socket, &msg, 0);
 
 	std::string data(static_cast<char*>(zmq_msg_data(&msg)), zmq_msg_size(&msg));
-	Response response;
-	response.ParseFromString(data);
+	Request request;
+	request.ParseFromString(data);
+
+	_process_request(request);
 }
 
-Request
-reactor::_create_request(const Request::RequestType request_type) {
-	Request r;
-	r.set_request_type(request_type);
+void reactor::_process_request(const Request& r) {
+	if (l == nullptr) {
+		_respond(_create_response(r.command_id(), Response::STATUS_NOK, Response::REASON_NOT_READY));
+	}
+
+	switch(r.cmd()) {
+	default:
+		_respond(_create_response(r.command_id(), Response::STATUS_NOK, Response::REASON_UNKNOWN_REQUEST));
+		break;
+	case Request::CMD_ADD_NODE:
+		_respond(l->on_add_node());
+		break;
+
+	}
+}
+
+Response
+reactor::_create_response(int command_id, const Response::Status status, const Response::Reason reason) {
+	Response r;
+	r.set_status(status);
+	r.set_reason(reason);
 	return r;
 }
 
 reactor::reactor(void *socket):socket(socket) {
-}
-
-void
-reactor::request_status() {
-	auto r = _create_request(Request::STATUS);
-	r.set_request_match(Request::ALL);
-	_request(r);
-}
-
-void
-reactor::request_status_for(nodeid id) {
-	auto r = _create_request(Request::STATUS);
-	r.set_request_match(Request::SPECIFIC);
-	r.set_node_id(id.to_int());
-	_request(r);}
-
-void reactor::request_assignments() {
-	auto r = _create_request(Request::ASSIGNMENT);
-	r.set_request_match(Request::ALL);
-	_request(r);
-}
-
-void reactor::request_assignments_for(nodeid id) {
-	auto r = _create_request(Request::ASSIGNMENT);
-	r.set_request_match(Request::SPECIFIC);
-	r.set_node_id(id.to_int());
-	_request(r);
 }
 
 

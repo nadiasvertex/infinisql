@@ -1,7 +1,7 @@
 Import(['env', 'libraries'])
 
 isql_env = env.Clone()
-isql_env.Append(LIBS=libraries +\ 
+isql_env.Append(LIBS=libraries + 
                ['protobuf', 
                 'tbb', 
                 'lmdb', 
