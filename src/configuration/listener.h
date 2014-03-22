@@ -15,44 +15,46 @@ namespace configuration {
 
 class listener {
 public:
-	virtual Response on_add_node()=0;
-	virtual Response on_remove_node()=0;
-	virtual Response on_stop_node()=0;
-	virtual Response on_set_node_type()=0;
+	virtual Response on_add_node(const Request& r)=0;
+	virtual Response on_remove_node(const Request& r)=0;
+	virtual Response on_stop_node(const Request& r)=0;
+	virtual Response on_set_node_type(const Request& r)=0;
 
-	virtual Response on_partition()=0;
-	virtual Response on_add_partition()=0;
-	virtual Response on_delete_partition()=0;
-	virtual Response on_new_partition()=0;
-	virtual Response on_persist_partition()=0;
-	virtual Response on_replicate_partition()=0;
-	virtual Response on_stop_partition()=0;
-	virtual Response on_sync_partition()=0;
+	virtual Response on_partition(const Request& r)=0;
+	virtual Response on_add_partition(const Request& r)=0;
+	virtual Response on_delete_partition(const Request& r)=0;
+	virtual Response on_new_partition(const Request& r)=0;
+	virtual Response on_persist_partition(const Request& r)=0;
+	virtual Response on_replicate_partition(const Request& r)=0;
+	virtual Response on_start_partition(const Request& r)=0;
+	virtual Response on_stop_partition(const Request& r)=0;
+	virtual Response on_sync_partition(const Request& r)=0;
 
-	virtual Response on_add_partition_group()=0;
+	virtual Response on_add_partition_group(const Request& r)=0;
 
-	virtual Response on_start()=0;
-	virtual Response on_stop()=0;
+	virtual Response on_start(const Request& r)=0;
+	virtual Response on_stop(const Request& r)=0;
 
-	virtual Response on_transaction_log()=0;
-	virtual Response on_stop_transaction_log()=0;
-	virtual Response on_notify_when_log_committed()=0;
-	virtual Response on_notify_when_log_sent()=0;
+	virtual Response on_transaction_log(const Request& r)=0;
+	virtual Response on_start_transaction_log(const Request& r)=0;
+	virtual Response on_stop_transaction_log(const Request& r)=0;
+	virtual Response on_notify_when_log_committed(const Request& r)=0;
+	virtual Response on_notify_when_log_sent(const Request& r)=0;
 
-	virtual Response on_start_transactions()=0;
-	virtual Response on_finish_and_abort_transactions()=0;
-	virtual Response on_finish_transactions()=0;
+	virtual Response on_start_transactions(const Request& r)=0;
+	virtual Response on_finish_and_abort_transactions(const Request& r)=0;
+	virtual Response on_finish_transactions(const Request& r)=0;
 
-	virtual Response on_set_sync()=0;
-	virtual Response on_stop_sync()=0;
+	virtual Response on_set_sync(const Request& r)=0;
+	virtual Response on_stop_sync(const Request& r)=0;
 
-	virtual Response on_change_manager()=0;
-	virtual Response on_change_replica()=0;
+	virtual Response on_change_manager(const Request& r)=0;
+	virtual Response on_change_replica(const Request& r)=0;
 
-	virtual Response on_delete_version()=0;
-	virtual Response on_get_config()=0;
-	virtual Response on_node_problem()=0;
-	virtual Response on_relayout()=0;
+	virtual Response on_delete_version(const Request& r)=0;
+	virtual Response on_get_config(const Request& r)=0;
+	virtual Response on_node_problem(const Request& r)=0;
+	virtual Response on_relayout(const Request& r)=0;
 };
 
 
