@@ -8,9 +8,11 @@
 #ifndef INFINISQLREACTOR_H_
 #define INFINISQLREACTOR_H_
 
+#include <memory>
 #include <zmq.h>
 #include "nodeid.h"
 #include "configuration.pb.h"
+#include "listener.h"
 
 namespace infinisql {
 namespace configuration {
@@ -20,17 +22,20 @@ class reactor {
 	// must be connected, and set to REQ/REP mode.
 	void *socket;
 
+	std::shared_ptr<listener> l;
+
 protected:
-	void _request(const Request& request);
-	Request _create_request(const Request::RequestType request_type);
+	void _respond(const Response& response);
+	Response _create_response(int command_id, const Response::Status status, const Response::Reason reason);
 
 	void _check_receive_status();
+	void _process_request(const Request& r);
 public:
 	reactor(void *socket);
-	void request_status();
-	void request_status_for(nodeid id);
-	void request_assignments();
-	void request_assignments_for(nodeid id);
+
+	void set_listener(std::shared_ptr<listener> l) {
+		this->l = l;
+	}
 
 	void process();
 };
