@@ -18,49 +18,26 @@
  */
 
 /**
- * @file   Schema.cc
+ * @file   UserSchemaOperation.h
  * @author Mark Travis <mtravis15432+src@gmail.com>
- * @date   Mon Jan 13 13:04:58 2014
+ * @date   Sat Feb 15 00:27:52 2014
  * 
- * @brief  schema is a collection of tables and indices
+ * @brief  transaction handler for user & schema activities
  */
 
-#include "Schema.h"
-#include "Catalog.h"
+#ifndef INFINISQL_USERSCHEMAOPERATION_H
+#define INFINISQL_USERSCHEMAOPERATION_H
 
-Schema::Schema()
+#include "Transaction.h"
+#include "../actors/Actor.h"
+
+class UserSchemaOperation : public Transaction
 {
+public:
+    UserSchemaOperation(Actor *callingActor);
     
-}
+    Actor *callingActor;
+    int64_t id;
+};
 
-Schema::Schema(const Schema &orig) : Metadata(orig)
-{
-    (Metadata)*this=Metadata(orig);
-    parentcatalogid=orig.parentcatalogid;
-}
-
-Schema &Schema::operator= (const Schema &orig)
-{
-    (Metadata)*this=Metadata(orig);
-    return *this;
-}
-
-Schema::~Schema()
-{
-    
-}
-
-void ser(const Schema &d, Serdes &output)
-{
-    ser((const Metadata &)d, output);
-}
-
-size_t sersize(const Schema &d)
-{
-    return sersize((const Metadata &)d);
-}
-
-void des(Serdes &input, Schema &d)
-{
-    des(input, (Metadata &)d);
-}
+#endif // INFINISQL_USERSCHEMAOPERATION_H

@@ -18,49 +18,23 @@
  */
 
 /**
- * @file   Schema.cc
+ * @file   Transaction.h
  * @author Mark Travis <mtravis15432+src@gmail.com>
- * @date   Mon Jan 13 13:04:58 2014
+ * @date   Sat Feb 15 16:36:07 2014
  * 
- * @brief  schema is a collection of tables and indices
+ * @brief  base class for transactions and continuing operations
  */
 
-#include "Schema.h"
-#include "Catalog.h"
+#ifndef INFINISQLTRANSACTION_H
+#define INFINISQLTRANSACTION_H
 
-Schema::Schema()
-{
-    
-}
+#include "../actors/Actor.h"
 
-Schema::Schema(const Schema &orig) : Metadata(orig)
+class Transaction
 {
-    (Metadata)*this=Metadata(orig);
-    parentcatalogid=orig.parentcatalogid;
-}
+public:
+    Transaction();
+    virtual ~Transaction();
+};
 
-Schema &Schema::operator= (const Schema &orig)
-{
-    (Metadata)*this=Metadata(orig);
-    return *this;
-}
-
-Schema::~Schema()
-{
-    
-}
-
-void ser(const Schema &d, Serdes &output)
-{
-    ser((const Metadata &)d, output);
-}
-
-size_t sersize(const Schema &d)
-{
-    return sersize((const Metadata &)d);
-}
-
-void des(Serdes &input, Schema &d)
-{
-    des(input, (Metadata &)d);
-}
+#endif // INFINISQLTRANSACTION_H

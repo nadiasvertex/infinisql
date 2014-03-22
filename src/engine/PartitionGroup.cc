@@ -18,71 +18,44 @@
  */
 
 /**
- * @file   Index.cc
+ * @file   PartitionGroup.cc
  * @author Mark Travis <mtravis15432+src@gmail.com>
- * @date   Mon Jan 13 13:45:59 2014
+ * @date   Mon Feb 17 13:30:40 2014
  * 
- * @brief  index
+ * @brief  just describes partition group for storage in UserSchema
  */
 
-#include "Index.h"
-#include "Catalog.h"
-#include "Schema.h"
-#include "Table.h"
+#include "PartitionGroup.h"
 
-Index::Index()
+PartitionGroup::PartitionGroup(): Metadata(), currentversionid(0),
+                                  pendingversionid(0)
 {
     
 }
 
-Index::Index(const Index &orig) : Metadata(orig)
+PartitionGroup::PartitionGroup(std::string &namearg, int16_t idarg)
+    : Metadata(), currentversionid(1), pendingversionid(0)
 {
-//    cp(orig);
+    name=namearg;
+    id=idarg;
 }
 
-Index &Index::operator= (const Index &orig)
-{
-    (Metadata)*this=Metadata(orig);
-//    cp(orig);
-    return *this;
-}
-
-/*
-void Index::cp(const Index &orig)
-{
-}
-*/
-
-Index::~Index()
-{
-}
-
-void Index::getdbname(char *dbname)
-{
-    getdbname2('t', parentCatalog->id, parentSchema->id, dbname);
-}
-
-int Index::dbOpen()
-{
-    return Metadata::dbOpen(MDB_DUPSORT);
-}
-
-void ser(const Index &d, Serdes &output)
+void ser(const PartitionGroup &d, Serdes &output)
 {
     ser((const Metadata &)d, output);
-    ser(d.fieldids, output);
-    ser(d.isunique, output);
+    ser(d.currentversionid, output);
+    ser(d.pendingversionid, output);
 }
 
-size_t sersize(const Index &d)
+size_t sersize(const PartitionGroup &d)
 {
-    return sersize((const Metadata &)d) + sersize(d.fieldids) +
-        sersize(d.isunique);
+    return sersize((const Metadata &)d) + sersize(d.currentversionid) +
+        sersize(d.pendingversionid);
 }
 
-void des(Serdes &input, Index &d)
+void des(Serdes &input, PartitionGroup &d)
 {
     des(input, (Metadata &)d);
-    des(input, d.fieldids);
-    des(input, d.isunique);
+    des(input, d.currentversionid);
+    des(input, d.pendingversionid);
 }

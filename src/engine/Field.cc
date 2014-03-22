@@ -271,125 +271,25 @@ bool FieldValue::getnull() {
 	return false;
 }
 
-void FieldValue::ser(Serdes &output) {
-	switch (valtype) {
-	case VAL_NONE:
-		output.ser((char) valtype);
-		break;
-
-	case VAL_POD:
-		output.ser((char) valtype);
-		output.ser(value.int8);
-		break;
-
-	case VAL_NULL:
-		output.ser((char) valtype);
-		break;
-
-	case VAL_STRING: {
-		output.ser((char) valtype);
-		size_t s = value.str->size();
-		output.ser((int64_t) s);
-		output.ser(*value.str);
-	}
-	break;
-
-	case VAL_DECIMAL: {
-		output.ser((char) valtype);
-		const std::string st { value.dec->to_string() };
-		size_t s = st.size();
-		output.ser((int64_t) s);
-		output.ser(st);
-	};
-	break;
-
-	default:
-		LOG("can't serialize type " << valtype);
-	}
-}
-
-size_t FieldValue::sersize() {
-	switch (valtype) {
-	case VAL_NONE:
-		return 1;
-		break;
-
-	case VAL_POD:
-		return 1 + sizeof(value.int8);
-		break;
-
-	case VAL_NULL:
-		return 1;
-		break;
-
-	case VAL_STRING: {
-		return 1 + sizeof(int64_t) + value.str->size();
-		}
-		break;
-
-	case VAL_DECIMAL: {
-			return 1 + sizeof(int64_t) + value.dec->to_string().size();
-		}
-		break;
-
-	default:
-		LOG("can't get size of type " << valtype);
-	}
-
-	return 0;
-}
-
-void FieldValue::des(Serdes &input) {
-	cleanup_pointers();
-	input.des((char &) valtype);
-
-	switch (valtype) {
-	case VAL_NONE:
-		break;
-
-	case VAL_POD:
-		input.des(value.int8);
-		break;
-
-	case VAL_NULL:
-		break;
-
-	case VAL_STRING: {
-			int64_t s;
-			value.str = new std::string { };
-			input.des(s);
-			input.des(*(value.str));
-		}
-		break;
-
-	case VAL_DECIMAL: {
-			int64_t s;
-			std::string st;
-			input.des(s);
-			input.des(st);
-			value.dec = new decimal{ st };
-		}
-		break;
-
-	default:
-		LOG("can't deserialize type " << valtype);
-	}
-}
-
 Field::Field() :
-		Metadata(), type(TYPE_NONE), size(-1), precision(-1), scale(-1), nullconstraint(
-				false) {
+		Metadata(), type(TYPE_NONE), size(0), precision(0), scale(0),
+        nullconstraint(false)
+{
 	defaultValue.nullify();
 }
 
-Field::Field(std::shared_ptr<Table> parentTable, const std::string& name, type_e type) :
-		Field() {
-	this->type = type;
+Field::Field(std::string &namearg, int16_t idarg,
+          type_e type, ssize_t size, ssize_t precision, ssize_t scale,
+          FieldValue &defaultValue, bool nullconstraint)
+    : Metadata(), type(type), size(size), precision(precision), scale(scale),
+      defaultValue(defaultValue), nullconstraint(nullconstraint)
+{
+    name=namearg;
+    id=idarg;
+}
 
-	if (initializer(parentTable, name) == false) {
-		return;
-	}
-
+Field::Field(const std::string& name, type_e type) : Field()
+{
 	switch (type) {
 	case TYPE_NUMERIC:
 		precision = 100;
@@ -430,14 +330,8 @@ Field::Field(std::shared_ptr<Table> parentTable, const std::string& name, type_e
 	}
 }
 
-Field::Field(std::shared_ptr<Table> parentTable, const std::string& name, type_e type,
-		int64_t arg1) :
+Field::Field(const std::string& name, type_e type, int64_t arg1) :
 		Field() {
-	this->type = type;
-
-	if (initializer(parentTable, name) == false) {
-		return;
-	}
 
 	switch (type) {
 	case TYPE_NUMERIC:
@@ -487,18 +381,6 @@ Field::Field(std::shared_ptr<Table> parentTable, const std::string& name, type_e
 	}
 }
 
-Field::Field(std::shared_ptr<Table> parentTable, const std::string& name, type_e type,
-		int64_t arg1, int64_t arg2) :
-		Field() {
-	this->type = type;
-	precision = arg1;
-	scale = arg2;
-
-	if (initializer(parentTable, name) == false) {
-		return;
-	}
-}
-
 Field::Field(const Field &orig) :
 		Metadata(orig) {
 	cp(orig);
@@ -523,81 +405,30 @@ Field::~Field() {
 
 }
 
-bool Field::initializer(std::shared_ptr<Table> parentTable, const std::string& name) {
-	if (parentTable->fieldName2Id.count(name)) {
-		id = -1;
-		return false;
-	}
-	this->parentTable = parentTable;
-	getparents();
-	id = parentTable->getnextfieldid();
-	this->name = name;
-	parentTable->fieldName2Id[name] = id;
-	parentTable->fieldid2Field[id] = this;
-	defaultValue.nullify();
-
-	return true;
-}
-
-void Field::getparents() {
-	parentCatalog = parentTable->parentCatalog;
-	parentSchema = parentTable->parentSchema;
-	parentcatalogid = parentTable->parentcatalogid;
-	parentschemaid = parentTable->parentschemaid;
-	parenttableid = parentTable->id;
-}
-
-void Field::ser(Serdes &output) {
-	Metadata::ser(output);
-	output.ser((char) type);
-	output.ser((int64_t) size);
-	output.ser((int64_t) precision);
-	output.ser((int64_t) scale);
-	defaultValue.ser(output);
-}
-
-size_t Field::sersize() {
-	size_t retsize = Metadata::sersize();
-	retsize += Serdes::sersize((char) type);
-	retsize += Serdes::sersize((int64_t) size);
-	retsize += Serdes::sersize((int64_t) precision);
-	retsize += Serdes::sersize((int64_t) scale);
-	retsize += defaultValue.sersize();
-
-	return retsize;
-}
-
-void Field::des(Serdes &input) {
-	Metadata::des(input);
-	input.des((char &) type);
-	input.des((int64_t &) size);
-	input.des((int64_t &) precision);
-	input.des((int64_t &) scale);
-	defaultValue.des(input);
-}
 
 void Field::serValue(FieldValue &fieldValue, Serdes &output) {
 	switch (type) {
 	case TYPE_TINYINT:
-		output.ser(fieldValue.value.int1);
+        ser(fieldValue.value.int1, output);
 		break;
 
 	case TYPE_SMALLINT:
-		output.ser(fieldValue.value.int2);
+        ser(fieldValue.value.int2, output);
 		break;
 
 	case TYPE_INT:
-		output.ser(fieldValue.value.int4);
+        ser(fieldValue.value.int4, output);
 		break;
 
 	case TYPE_BIGINT:
-		output.ser(fieldValue.value.int8);
+        ser(fieldValue.value.int8, output);
 		break;
 
 	case TYPE_BOOLEAN:
-		output.ser(fieldValue.value.boolean);
+        ser(fieldValue.value.boolean, output);
 		break;
 
+        /*
 	case TYPE_NUMERIC:
 		output.ser(*(fieldValue.value.dec));
 		break;
@@ -605,42 +436,43 @@ void Field::serValue(FieldValue &fieldValue, Serdes &output) {
 	case TYPE_DECIMAL:
 		output.ser(*(fieldValue.value.dec));
 		break;
+        */
 
 	case TYPE_REAL:
-		output.ser(fieldValue.value.singlefloat);
+        ser(fieldValue.value.singlefloat, output);
 		break;
 
 	case TYPE_DOUBLE_PRECISION:
-		output.ser(fieldValue.value.doublefloat);
+        ser(fieldValue.value.doublefloat, output);
 		break;
 
 	case TYPE_FLOAT:
-		output.ser(fieldValue.value.doublefloat);
+        ser(fieldValue.value.doublefloat, output);
 		break;
 
 	case TYPE_CHARACTER:
 		if (fieldValue.valtype == FieldValue::VAL_POD) {
-			output.ser(fieldValue.value.character);
+            ser(fieldValue.value.character, output);
 		} else {
-			output.ser(*fieldValue.value.str, size);
+            ser(*fieldValue.value.str, size, output);
 		}
 		break;
 
 	case TYPE_CHARACTER_VARYING: {
-		output.ser(*fieldValue.value.str);
+        ser(*fieldValue.value.str, output);
 	}
 		break;
 
 	case TYPE_BIT:
 		if (fieldValue.valtype == FieldValue::VAL_POD) {
-			output.ser(fieldValue.value.character);
+            ser(fieldValue.value.character, output);
 		} else {
-			output.ser(*fieldValue.value.str, size);
+            ser(*fieldValue.value.str, size, output);
 		}
 		break;
 
 	case TYPE_BIT_VARYING: {
-		output.ser(*fieldValue.value.str);
+        ser(*fieldValue.value.str, output);
 	}
 		break;
 
@@ -675,29 +507,30 @@ void Field::desValue(Serdes &input, FieldValue &fieldValue) {
 	switch (type) {
 	case TYPE_TINYINT:
 		fieldValue.valtype = FieldValue::VAL_POD;
-		input.des(fieldValue.value.int1);
+        des(input, fieldValue.value.int1);
 		break;
 
 	case TYPE_SMALLINT:
 		fieldValue.valtype = FieldValue::VAL_POD;
-		input.des(fieldValue.value.int2);
+        des(input, fieldValue.value.int2);
 		break;
 
 	case TYPE_INT:
 		fieldValue.valtype = FieldValue::VAL_POD;
-		input.des(fieldValue.value.int4);
+        des(input, fieldValue.value.int4);
 		break;
 
 	case TYPE_BIGINT:
 		fieldValue.valtype = FieldValue::VAL_POD;
-		input.des(fieldValue.value.int8);
+        des(input, fieldValue.value.int8);
 		break;
 
 	case TYPE_BOOLEAN:
 		fieldValue.valtype = FieldValue::VAL_POD;
-		input.des(fieldValue.value.boolean);
+        des(input, fieldValue.value.boolean);
 		break;
 
+        /*
 	case TYPE_NUMERIC:
 		fieldValue.valtype = FieldValue::VAL_DECIMAL;
 		input.des(fieldValue.value.dec);
@@ -707,52 +540,68 @@ void Field::desValue(Serdes &input, FieldValue &fieldValue) {
 		fieldValue.valtype = FieldValue::VAL_DECIMAL;
 		input.des(fieldValue.value.dec);
 		break;
+        */
 
 	case TYPE_REAL:
 		fieldValue.valtype = FieldValue::VAL_POD;
-		input.des(fieldValue.value.singlefloat);
+        des(input, fieldValue.value.singlefloat);
 		break;
 
 	case TYPE_DOUBLE_PRECISION:
 		fieldValue.valtype = FieldValue::VAL_POD;
-		input.des(fieldValue.value.doublefloat);
+        des(input, fieldValue.value.doublefloat);
 		break;
 
 	case TYPE_FLOAT:
 		fieldValue.valtype = FieldValue::VAL_POD;
-		input.des(fieldValue.value.doublefloat);
+        des(input, fieldValue.value.doublefloat);
 		break;
 
 	case TYPE_CHARACTER:
 		if (size == 1) {
 			fieldValue.valtype = FieldValue::VAL_POD;
-			input.des(fieldValue.value.character);
+            des(input, fieldValue.value.character);
 		} else {
 			fieldValue.valtype = FieldValue::VAL_STRING;
-			input.des(fieldValue.value.str, size);
+            des(input, *fieldValue.value.str, size);
 		}
 		break;
 
 	case TYPE_CHARACTER_VARYING: {
 		fieldValue.valtype = FieldValue::VAL_STRING;
-		input.des(*fieldValue.value.str);
+        fieldValue.value.str=new (std::nothrow) std::string;
+        if (fieldValue.value.str==nullptr)
+        {
+            break; // probably should exit here
+        }
+        des(input, *fieldValue.value.str);
 	}
 		break;
 
 	case TYPE_BIT:
 		if (size <= 8) {
 			fieldValue.valtype = FieldValue::VAL_POD;
-			input.des(fieldValue.value.character);
+            des(input, fieldValue.value.character);
 		} else {
 			fieldValue.valtype = FieldValue::VAL_STRING;
 			size_t len = (size + 7) / 8;
-			input.des(fieldValue.value.str, len);
+            fieldValue.value.str=new (std::nothrow) std::string;
+            if (fieldValue.value.str==nullptr)
+            {
+                break; // probably should exit here
+            }
+            des(input, *fieldValue.value.str, len);
 		}
 		break;
 
 	case TYPE_BIT_VARYING: {
 		fieldValue.valtype = FieldValue::VAL_STRING;
-		input.des(*fieldValue.value.str);
+        fieldValue.value.str=new (std::nothrow) std::string;
+        if (fieldValue.value.str==nullptr)
+        {
+            break; // probably should exit here
+        }
+        des(input, *fieldValue.value.str);
 	}
 		break;
 
@@ -1104,3 +953,78 @@ void Field::convertValue(FieldValue &fieldValue) {
 	}
 }
 
+void ser(FieldValue::valtype_e d, Serdes &output)
+{
+    serpod(d, output);
+}
+
+size_t sersize(FieldValue::valtype_e d)
+{
+    return sizeof(d);
+}
+
+void des(Serdes &input, FieldValue::valtype_e &d)
+{
+    despod(input, d);
+}
+
+void ser(const FieldValue &d, Serdes &output)
+{
+    ser(d.valtype, output);
+    ser(&d.value, sizeof(d.value), output);
+}
+
+size_t sersize(const FieldValue &d)
+{
+    return sersize(d.valtype) + sizeof(d.value);
+}
+
+void des(Serdes &input, FieldValue &d)
+{
+    des(input, d.valtype);
+    des(input, &d.value, sizeof(d.value));
+}
+
+void ser(Field::type_e d, Serdes &output)
+{
+    serpod(d, output);
+}
+
+size_t sersize(Field::type_e d)
+{
+    return sizeof(d);
+}
+
+void des(Serdes &input, Field::type_e &d)
+{
+    despod(input, d);
+}
+
+void ser(const Field &d, Serdes &output)
+{
+    ser((const Metadata &)d, output);
+    ser(d.type, output);
+    ser(d.size, output);
+    ser(d.precision, output);
+    ser(d.scale, output);
+    ser(d.defaultValue, output);
+    ser(d.nullconstraint, output);
+}
+
+size_t sersize(const Field &d)
+{
+    return sersize((const Metadata &)d) + sersize(d.type) + sersize(d.size) +
+        sersize(d.precision) + sersize(d.scale) + sersize(d.defaultValue) +
+        sersize(d.nullconstraint);
+}
+
+void des(Serdes &input, Field &d)
+{
+    des(input, (Metadata &)d);
+    des(input, d.type);
+    des(input, d.size);
+    des(input, d.precision);
+    des(input, d.scale);
+    des(input, d.defaultValue);
+    des(input, d.nullconstraint);
+}

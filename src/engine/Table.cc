@@ -30,84 +30,47 @@
 #include "Schema.h"
 #line 32 "Table.cc"
 
-Table::Table() : Metadata (), nextfieldid (-1)
+Table::Table()
 {
     
 }
 
-Table::Table(std::shared_ptr<Schema> parentSchema, const std::string &name) : nextfieldid (-1)
-{
-    if (parentSchema->parentCatalog->tableName2Id.count(name))
-    {
-        id=-1;
-        return;
-    }
-    this->parentSchema=parentSchema;
-    getparents();
-    id=parentCatalog->getnexttableid();
-    this->name=name;
-    parentCatalog->tableName2Id[name]=id;
-    parentCatalog->tableid2Table[id]=this;
-    parentSchema->tableName2Id[name]=id;
-    parentSchema->tableid2Table[id]=this;
-}
-
 Table::Table(const Table &orig) : Metadata (orig)
 {
-    cp(orig);
 }
 
 Table &Table::operator= (const Table &orig)
 {
     (Metadata)*this=Metadata(orig);
-    cp(orig);
     return *this;
 }
 
-void Table::cp(const Table &orig)
-{
-    nextfieldid=orig.nextfieldid;
-}
 
 Table::~Table()
 {
 }
 
-void Table::ser(Serdes &output)
+void Table::getdbname(char *dbname)
 {
-    Metadata::ser(output);
-    output.ser(nextfieldid);
-}
-
-size_t Table::sersize()
-{
-    size_t retval=Metadata::sersize();
-    retval+=Serdes::sersize(nextfieldid);
-
-    return retval;
-}
-
-void Table::des(Serdes &input)
-{
-    Metadata::des(input);
-    input.des(nextfieldid);
-}
-
-void Table::getparents()
-{
-    parentCatalog=parentSchema->parentCatalog;
-    parentTable=nullptr;
-    parentcatalogid=parentSchema->parentcatalogid;
-    parentschemaid=parentSchema->id;
-    parenttableid=-1;
-}
-
-int16_t Table::getnextfieldid()
-{
-    return ++nextfieldid;
+    getdbname2('t', parentCatalog->id, parentSchema->id, dbname);
 }
 
 int Table::dbOpen()
 {
     return Metadata::dbOpen(0);
+}
+
+void ser(const Table &d, Serdes &output)
+{
+    ser((const Metadata &)d, output);
+}
+
+size_t sersize(const Table &d)
+{
+    return sersize((const Metadata &)d);
+}
+
+void des(Serdes &input, Table &d)
+{
+    des(input, (Metadata &)d);
 }

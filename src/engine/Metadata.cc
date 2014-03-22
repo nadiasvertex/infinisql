@@ -29,21 +29,11 @@
 
 #include "Metadata.h"
 
-Metadata::Metadata() : id(-1), parentCatalog(nullptr), parentSchema(nullptr),
-                       parentTable(nullptr), parentcatalogid(-1),
-                       parentschemaid(-1), parenttableid(-1),
-                       lmdbinfo({nullptr, nullptr, nullptr, 0})
+Metadata::Metadata()
 {
     
 }
 
-Metadata::Metadata(int16_t id, std::string name)
-    : id(id), name(name), parentCatalog(nullptr), parentSchema(nullptr),
-      parentTable(nullptr), parentcatalogid(-1), parentschemaid(-1),
-      parenttableid(-1), lmdbinfo({nullptr, nullptr, nullptr, 0})
-{
-    
-}
 
 Metadata::Metadata(const Metadata &orig)
 {
@@ -52,53 +42,22 @@ Metadata::Metadata(const Metadata &orig)
     parentCatalog=nullptr;
     parentSchema=nullptr;
     parentTable=nullptr;
-    parentcatalogid=orig.parentcatalogid;
-    parentschemaid=orig.parentschemaid;
-    parenttableid=orig.parenttableid;
+    versionid=orig.versionid;
+    lmdbinfo={nullptr, nullptr, nullptr, 0};
 }
 
 Metadata::~Metadata() {
 }
 
-void Metadata::ser(Serdes &output)
-{
-    output.ser(id);
-    output.ser(name);
-    output.ser(parentcatalogid);
-    output.ser(parentschemaid);
-    output.ser(parenttableid);
-}
-
-size_t Metadata::sersize()
-{
-    return Serdes::sersize(id) + Serdes::sersize(name) +
-        Serdes::sersize(parentcatalogid) + Serdes::sersize(parentschemaid) +
-        Serdes::sersize(parenttableid);
-}
-
-void Metadata::des(Serdes &input)
-{
-    input.des(id);
-    input.des(name);
-    input.des(parentcatalogid);
-    input.des(parentschemaid);
-    input.des(parenttableid);
-}
-
 int Metadata::dbOpen(unsigned int flags)
 {
-    char dbname[sizeof(parentcatalogid)+sizeof(parentschemaid)+sizeof(id)+1]={};
-    memcpy(dbname, &parentcatalogid, sizeof(parentcatalogid));
-    memcpy(dbname+sizeof(parentcatalogid), &parentschemaid,
-           sizeof(parentschemaid));
-    memcpy(dbname+sizeof(parentcatalogid)+sizeof(parentschemaid), &id,
-           sizeof(id));
-
     int retval=mdb_txn_begin(lmdbinfo.env, nullptr, 0, &lmdbinfo.txn);
     if (retval)
     {
         return retval;
     }
+    char dbname[3*sizeof(id)+sizeof(versionid)+2];
+    getdbname(dbname);
     retval=mdb_dbi_open(lmdbinfo.txn, dbname, MDB_CREATE | flags,
                         &lmdbinfo.dbi);
     if (retval)
@@ -144,4 +103,23 @@ int Metadata::dbDrop()
     }
     retval=mdb_txn_commit(lmdbinfo.txn);
     return retval;    
+}
+
+void ser(const Metadata &d, Serdes &output)
+{
+    ser(d.id, output);
+    ser(d.name, output);
+    ser(d.versionid, output);
+}
+
+size_t sersize(const Metadata &d)
+{
+    return sersize(d.id) + sersize(d.name) + sersize(d.versionid);
+}
+
+void des(Serdes &input, Metadata &d)
+{
+    des(input, d.id);
+    des(input, d.name);
+    des(input, d.versionid);
 }

@@ -30,6 +30,7 @@
  */
 
 #include "UserSchemaManager.h"
+#include "../transaction/trans.h"
 
 UserSchemaManager::UserSchemaManager(Actor::identity_s identity)
     : Actor(identity)
@@ -38,9 +39,29 @@ UserSchemaManager::UserSchemaManager(Actor::identity_s identity)
 
 void UserSchemaManager::operator()()
 {
+    int waitfor=100;
 
     while(1)
     {
-        sleep(10);
+        myTopology.update();
+        sendObBatch();
+
+        for (int inmsg=0; inmsg < 10; ++inmsg)
+        {
+            getmsg(waitfor);
+            if (msgrcv==nullptr)
+            {
+                waitfor=100;
+                break;
+            }
+            waitfor=0;
+
+            switch(msgrcv->message.topic)
+            {
+
+            default:
+                LOG("can't handle topic " << msgrcv->message.topic);
+            }
+        }
     }
 }

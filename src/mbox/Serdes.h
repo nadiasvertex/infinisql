@@ -36,6 +36,9 @@
 #include <memory>
 #include <string>
 #include <fstream>
+#include <vector>
+#include <map>
+#include <unordered_map>
 #include <lmdb.h>
 
 #include "../decimal/decnum.h"
@@ -46,7 +49,7 @@ extern std::ofstream logfile;
 /** 
  * @brief object to serialize anything
  *
- * position counter moves automatically when serializing to and
+ * position counters move automatically when serializing to and
  * deserializing from. to use, first get the size of the entire object,
  * can add sersize() methods to do so. Then serialize into /
  * deserialize from. All pod and external 3rd party types should be
@@ -71,7 +74,7 @@ public:
      *
      * @param valarg 
      */
-    Serdes(MDB_val &valarg);
+    Serdes(MDB_val *valarg);
     /** 
      * @brief create object to deserialize from character sequence
      *
@@ -85,260 +88,196 @@ public:
     Serdes(const char *data, size_t size);
     ~Serdes();
 
-    // pods
-    /** 
-     * @brief serialize item
-     *
-     * @param d item to serialize
-     */
-    void ser(int8_t d);
-    /** 
-     * @brief get size of item serialized
-     *
-     * @param d item to measure for serialization
-     *
-     * @return size of item when serialized
-     */
-    static size_t sersize(int8_t d);
-    /** 
-     * @brief deserialize item
-     *
-     * @param d buffer into which to serialize item
-     */
-    void des(int8_t &d);
-    /** 
-     * @brief serialize item
-     *
-     * @param d item to serialize
-     */
-    void ser(int16_t d);
-    /** 
-     * @brief get size of item serialized
-     *
-     * @param d item to measure for serialization
-     *
-     * @return size of item when serialized
-     */
-    static size_t sersize(int16_t d);
-    /** 
-     * @brief deserialize item
-     *
-     * @param d buffer into which to serialize item
-     */
-    void des(int16_t &d);
-    /** 
-     * @brief serialize item
-     *
-     * @param d item to serialize
-     */
-    void ser(int32_t d);
-    /** 
-     * @brief get size of item serialized
-     *
-     * @param d item to measure for serialization
-     *
-     * @return size of item when serialized
-     */
-    static size_t sersize(int32_t d);
-    /** 
-     * @brief deserialize item
-     *
-     * @param d buffer into which to serialize item
-     */
-    void des(int32_t &d);
-    /** 
-     * @brief serialize item
-     *
-     * @param d item to serialize
-     */
-    void ser(int64_t d);
-    /** 
-     * @brief get size of item serialized
-     *
-     * @param d item to measure for serialization
-     *
-     * @return size of item when serialized
-     */
-    static size_t sersize(int64_t d);
-    /** 
-     * @brief deserialize item
-     *
-     * @param d buffer into which to serialize item
-     */
-    void des(int64_t &d);
-    /** 
-     * @brief serialize item
-     *
-     * @param d item to serialize
-     */
-    void ser(double d);
-    /** 
-     * @brief get size of item serialized
-     *
-     * @param d item to measure for serialization
-     *
-     * @return size of item when serialized
-     */
-    static size_t sersize(float d);
-    /** 
-     * @brief deserialize item
-     *
-     * @param d buffer into which to serialize item
-     */
-    void des(float &d);
-    /** 
-     * @brief serialize item
-     *
-     * @param d item to serialize
-     */
-    void ser(float d);
-    /** 
-     * @brief get size of item serialized
-     *
-     * @param d item to measure for serialization
-     *
-     * @return size of item when serialized
-     */
-    static size_t sersize(double d);
-    /** 
-     * @brief deserialize item
-     *
-     * @param d buffer into which to serialize item
-     */
-    void des(double &d);
-    /** 
-     * @brief serialize item
-     *
-     * @param d item to serialize
-     */
-    void ser(char d);
-    /** 
-     * @brief get size of item serialized
-     *
-     * @param d item to measure for serialization
-     *
-     * @return size of item when serialized
-     */
-    static size_t sersize(char d);
-    /** 
-     * @brief deserialize item
-     *
-     * @param d buffer into which to serialize item
-     */
-    void des(char &d);
-    /** 
-     * @brief serialize item
-     *
-     * @param d item to serialize
-     */
-    void ser(bool d);
-    /** 
-     * @brief get size of item serialized
-     *
-     * @param d item to measure for serialization
-     *
-     * @return size of item when serialized
-     */
-    static size_t sersize(bool d);
-    /** 
-     * @brief deserialize item
-     *
-     * @param d buffer into which to serialize item
-     */
-    void des(bool &d);
-
-    // containers
-    /** 
-     * @brief serialize string prepend length in the output stream
-     *
-     * @param d string to serialize
-     */
-    void ser(const std::string &d);
-    /** 
-     * @brief get size of string if serialized, plus room to hold length
-     *
-     * @param d item to measure for serialization
-     *
-     * @return size of item when serialized plus room to hold length
-     */
-    static size_t sersize(const std::string &d);
-    /** 
-     * @brief deserialize string with length in object before string
-     *
-     * @param d buffer into which to serialize item
-     */
-    void des(std::string &d);
-    /** 
-	 * @brief serialize decimal and store only the contents (not the length)
-	 *
-	 * @param d item to serialize
-	 *
-	 */
-	void ser(const decimal &d);
-	/**
-	 * @brief create decimal and deserialize into it, providing length
-	 *
-	 * @param d buffer to create and into which to deserialize
-	 *
-	 */
-	void des(decimal *&d);
-	/**
-     * @brief serialize string and store only the contents (not the length)
-     *
-     * @param d item to serialize
-     * @param dsize length to serialize
-     */
-    void ser(const std::string &d, size_t dsize);
-    /**
-     * @brief create string and deserialize into it, providing length
-     *
-     * @param d buffer to create and into which to deserialize
-     * @param dsize length to deserialize
-     */
-    void des(std::string *&d, size_t dsize);
-    /** 
-     * @brief serialize byte sequence, such as packed struct
-     *
-     * @param d start of region to serialize
-     * @param dsize size of region to serialize
-     */
-    void ser(void *d, size_t dsize);
-    /** 
-     * @brief deserialize into byte sequence, such as packed struct
-     *
-     * @param d region to deserialize into
-     * @param dsize size of region to deserialize
-     */
-    void des(void *d, size_t dsize);
-
-    /** 
-     * @brief set position to beginning of data
-     *
-     */
-    void rewind();
-    /** 
-     * @brief set position to end of data
-     *
-     */
-    void ffwd();
-    /** 
-     * @brief checks if at beginning of data
-     *
-     *
-     * @return true at beginning, false otherwise
-     */
-    bool isbegin();
-    /** 
-     * @brief checks if at end of data
-     *
-     *
-     * @return true at end, false otherwise
-     */
-    bool isend();
-
     bool isreadonly;
-    size_t pos;
+    size_t serpos;
+    size_t despos;
     struct MDB_val val;
 };
+
+/* for arbitrary data */
+void ser(const void *d, size_t dsize, Serdes &output);
+void des(Serdes &input, void *d, size_t dsize);
+
+// serialize POD types
+template < typename T >
+void serpod(T d, Serdes &output)
+{
+    ser(&d, sizeof(d), output);
+}
+
+template < typename T >
+void despod(Serdes &input, T &d)
+{
+    des(input, &d, sizeof(d));
+}
+
+void ser(int8_t d, Serdes &output);
+size_t sersize(int8_t d);
+void des(Serdes &input, int8_t &d);
+void ser(int16_t d, Serdes &output);
+size_t sersize(int16_t d);
+void des(Serdes &input, int16_t &d);
+void ser(int32_t d, Serdes &output);
+size_t sersize(int32_t d);
+void des(Serdes &input, int32_t &d);
+void ser(int64_t d, Serdes &output);
+size_t sersize(int64_t d);
+void des(Serdes &input, int64_t &d);
+void ser(uint8_t d, Serdes &output);
+size_t sersize(uint8_t d);
+void des(Serdes &input, uint8_t &d);
+void ser(uint16_t d, Serdes &output);
+size_t sersize(uint16_t d);
+void des(Serdes &input, uint16_t &d);
+void ser(uint32_t d, Serdes &output);
+size_t sersize(uint32_t d);
+void des(Serdes &input, uint32_t &d);
+void ser(uint64_t d, Serdes &output);
+size_t sersize(uint64_t d);
+void des(Serdes &input, uint64_t &d);
+void ser(float d, Serdes &output);
+size_t sersize(float d);
+void des(Serdes &input, float &d);
+void ser(double d, Serdes &output);
+size_t sersize(double d);
+void des(Serdes &input, double &d);
+void ser(char d, Serdes &output);
+size_t sersize(char d);
+void des(Serdes &input, char &d);
+void ser(bool d, Serdes &output);
+size_t sersize(bool d);
+void des(Serdes &input, bool &d);
+
+template < typename T >
+void ser(std::vector<T> d, Serdes &output)
+{
+    // nelem, item[, item, ...]
+    size_t s=d.size();
+    ser(s, output);
+    for (size_t n=0; n < d.size(); ++n)
+    {
+        ser(d[n], output);
+    }
+}
+
+template < typename T >
+size_t sersize(std::vector<T> d)
+{
+    size_t retval=sizeof(size_t);
+    for (size_t n=0; n < d.size(); ++n)
+    {
+        retval += sersize(d[n]);
+    }
+    return retval;
+}
+
+template < typename T >
+void des(Serdes &input, std::vector<T> &d)
+{
+    size_t s;
+    des(input, s);
+    d.reserve(s);
+    T val;
+    for (size_t n=0; n < s; ++n)
+    {
+        des(input, val);
+        d.push_back(val);
+    }
+}
+
+template < typename T, typename U >
+void ser(std::map<T, U> d, Serdes &output)
+{
+    // nelem, item[, item, ...]
+    size_t s=d.size();
+    ser(s, output);
+    typename std::map<T, U>::iterator it;
+    for (it = d.begin(); it != d.end(); ++it)
+    {
+        ser(it->first, output);
+        ser(it->second, output);
+    }
+}
+
+template < typename T, typename U >
+size_t sersize(std::map<T, U> d)
+{
+    size_t retval=sizeof(size_t);
+    typename std::map<T, U>::iterator it;
+    for (it = d.begin(); it != d.end(); ++it)
+    {
+        retval += sersize(it->first);
+        retval += sersize(it->second);
+    }
+
+    return retval;
+}
+
+template < typename T, typename U, typename V, typename W >
+void des(Serdes &input, std::map<T, U> &d)
+{
+    size_t s;
+    des(input, s);
+    T key;
+    U val;
+    for (size_t n=0; n < s; ++n)
+    {
+        des(input, key);
+        des(input, val);
+        d[key]=val;
+    }
+}
+
+template < typename T, typename U >
+void ser(std::unordered_map<T, U> d, Serdes &output)
+{
+    // nelem, item[, item, ...]
+    size_t s=d.size();
+    ser(s, output);
+    typename std::unordered_map<T, U>::iterator it;
+    for (it = d.begin(); it != d.end(); ++it)
+    {
+        ser(it->first, output);
+        ser(it->second, output);
+    }
+}
+
+template < typename T, typename U >
+size_t sersize(std::unordered_map<T, U> d)
+{
+    size_t retval=sizeof(size_t);
+    typename std::unordered_map<T, U>::iterator it;
+    for (it = d.begin(); it != d.end(); ++it)
+    {
+        retval += sersize(it->first);
+        retval += sersize(it->second);
+    }
+
+    return retval;
+}
+
+template < typename T, typename U, typename V, typename W >
+void des(Serdes &input, std::unordered_map<T, U> &d)
+{
+    size_t s;
+    des(input, s);
+    T key;
+    U val;
+    for (size_t n=0; n < s; ++n)
+    {
+        des(input, key);
+        des(input, val);
+        d[key]=val;
+    }
+}
+
+/* for string with length prepended in serialization object */
+void ser(const std::string &d, Serdes &output);
+size_t sersize(const std::string &d);
+void des(Serdes &input, std::string &d);
+
+/* for string with length not in serialization object */
+void ser(const std::string &d, size_t dsize, Serdes &output);
+void des(Serdes &input, std::string &d, size_t dsize);
 
 #endif // INFINISQLSERDES_H

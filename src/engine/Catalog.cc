@@ -23,19 +23,11 @@
  * @date   Mon Jan 13 08:14:02 2014
  * 
  * @brief  catalog is a collection of schemata and users
- * 
- * 
  */
 
 #include "Catalog.h"
 
-Catalog::Catalog() : Metadata (), nextuserid (0), nextschemaid (0),
-                     nexttableid (0), nextindexid (0)
-{
-}
-
-Catalog::Catalog(int16_t id, const std::string& name)
-    : Catalog()
+Catalog::Catalog() : Metadata (), nextuserid (0)
 {
 }
 
@@ -54,63 +46,12 @@ Catalog &Catalog::operator= (const Catalog &orig)
 void Catalog::cp(const Catalog &orig)
 {
     nextuserid=orig.nextuserid;
-    nextschemaid=orig.nextschemaid;
-    nexttableid=orig.nexttableid;
-    nextindexid=orig.nextindexid;
 }
 
 Catalog::~Catalog()
 {
 }
 
-void Catalog::ser(Serdes &output)
-{
-    Metadata::ser(output);
-    output.ser(nextuserid);
-    output.ser(nextschemaid);
-    output.ser(nexttableid);
-    output.ser(nextindexid);
-}
-
-size_t Catalog::sersize()
-{
-    size_t retval=Metadata::sersize();
-    retval+=Serdes::sersize(nextuserid);
-    retval+=Serdes::sersize(nextschemaid);
-    retval+=Serdes::sersize(nexttableid);
-    retval+=Serdes::sersize(nextindexid);
-
-    return retval;
-}
-
-void Catalog::des(Serdes &input)
-{
-    Metadata::des(input);
-    input.des(nextuserid);
-    input.des(nextschemaid);
-    input.des(nexttableid);
-    input.des(nextindexid);
-}
-
-int16_t Catalog::getnextuserid()
-{
-    return ++nextuserid;
-}
-
-int16_t Catalog::getnextschemaid()
-{
-    return ++nextschemaid;
-}
-
-int16_t Catalog::getnexttableid()
-{
-    return ++nexttableid;
-}
-
-int16_t Catalog::getnextindexid()
-{
-    return ++nextindexid;
-}
 
 int Catalog::openEnvironment(std::string path)
 {
@@ -162,4 +103,19 @@ int Catalog::deleteEnvironment(std::string path)
     }
     string lock=p + "lock.mdb";
     return remove(lock.c_str());
+}
+
+void ser(const Catalog &d, Serdes &output)
+{
+    ser((const Metadata &)d, output);
+}
+
+size_t sersize(const Catalog &d)
+{
+    return sersize((const Metadata &)d);
+}
+
+void des(Serdes &input, Catalog &d)
+{
+    des(input, (Metadata &)d);
 }

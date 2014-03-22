@@ -57,4 +57,6 @@ src/infinisqld
 deps/
 infinisqld/
 test
+**/*.pb.cc
+**/*.pb.h
 

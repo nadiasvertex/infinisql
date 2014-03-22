@@ -18,48 +18,35 @@
  */
 
 /**
- * @file   Index.h
+ * @file   PartitionGroup.h
  * @author Mark Travis <mtravis15432+src@gmail.com>
- * @date   Mon Jan 13 13:43:16 2014
+ * @date   Mon Feb 17 13:26:18 2014
  * 
- * @brief  index
+ * @brief  just describes partition group for storage in UserSchema
  */
 
-#ifndef INFINISQLINDEX_H
-#define INFINISQLINDEX_H
+#ifndef INFINISQLPARTITIONGROUP_H
+#define INFINISQLPARTITIONGROUP_H
 
 #include "Metadata.h"
 
-class Index : public Metadata
+class PartitionGroup : public Metadata
 {
 public:
-    Index();
-    Index(const Index &orig);
-    Index &operator= (const Index &orig);
-    /** 
-     * @brief copy sufficient for reproduction elsewhere
-     *
-     * requires post-processing for destination actors' pointers to related
-     * objects
-     *
-     * @param orig 
-     */
-//    void cp(const Index &orig);
-    ~Index();
+    PartitionGroup();
+    PartitionGroup(std::string &namearg, int16_t idarg);
 
-    void getdbname(char *dbname);
-    /** 
-     * @brief open index database
-     *
-     *
-     * @return return value from mdb_dbi_open()
+    int16_t currentversionid;
+    int16_t pendingversionid;
+
+    /* tableids in this partition group
+     * tables[schemaid][tableid]
      */
-    int dbOpen();
-    std::vector<int16_t> fieldids;
-    bool isunique;
+    std::unordered_map< int16_t, std::unordered_set<int16_t> > tables;
 };
-void ser(const Index &d, Serdes &output);
-size_t sersize(const Index &d);
-void des(Serdes &input, Index &d);
 
-#endif // INFINISQLINDEX_H
+void ser(const PartitionGroup &d, Serdes &output);
+size_t sersize(const PartitionGroup &d);
+void des(Serdes &input, PartitionGroup &d);
+
+#endif // INFINISQLPARTITIONGROUP_H

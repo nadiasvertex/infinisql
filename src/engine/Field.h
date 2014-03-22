@@ -258,25 +258,6 @@ public:
      * @return true if null, false if not null
      */
     bool getnull();
-    /** 
-     * @brief serialize to character array
-     *
-     * @param output 
-     *
-     * @return size of serialized object
-     */
-    void ser(Serdes &output);
-    /** 
-     * @brief get size of object if serialized
-     *
-     */
-    size_t sersize();
-    /** 
-     *
-     * @param input input serialized object
-     *
-     */
-    void des(Serdes &input);
     
     valtype_e valtype;
     value_u value;
@@ -314,13 +295,16 @@ public:
     };
     
     Field();
+    Field(std::string &namearg, int16_t idarg,
+          type_e type, ssize_t size, ssize_t precision, ssize_t scale,
+          FieldValue &defaultValue, bool nullconstraint);
     /** 
      * @brief create Field
      *
      * @param name field name
      * @param type field type
      */
-    Field(std::shared_ptr<Table> parentTable, const std::string& name, type_e type);
+    Field(const std::string& namearg, type_e typearg);
     /** 
      * @brief create Field
      *
@@ -328,8 +312,7 @@ public:
      * @param type field type
      * @param arg1 parameter to create field
      */
-    Field(std::shared_ptr<Table> parentTable, const std::string& name, type_e type,
-          int64_t arg1);
+    Field(const std::string& namearg, type_e typearg, int64_t arg1arg);
     /** 
      * @brief create Field
      *
@@ -338,8 +321,8 @@ public:
      * @param arg1 1st parameter to create field
      * @param arg2 2nd parameter to create field
      */
-    Field(std::shared_ptr<Table> parentTable, const std::string& name, type_e type,
-          int64_t arg1, int64_t arg2);
+    Field(const std::string& namearg, type_e typearg,
+          int64_t arg1arg, int64_t arg2arg);
     Field(const Field &orig);
     Field &operator= (const Field &orig);
     /** 
@@ -353,44 +336,6 @@ public:
     void cp(const Field &orig);
     ~Field();
 
-    /** 
-     * @brief intialize field parents and maps, get fieldid
-     *
-     * @param parentTable parent table
-     * @param name name
-     * 
-     * @return 
-     */
-    bool initializer(std::shared_ptr<Table> parentTable, const std::string& name);
-    /** 
-     * @brief get metadata parent information from parentTable
-     *
-     */
-    void getparents();
-    
-    /** 
-     * @brief serialize to character array
-     *
-     * don't serialize tablePtr because that will be different next time
-     * the Field is loaded. Plus, it will be loaded after its Table
-     *
-     * @param output 
-     *
-     * @return size of serialized object
-     */
-    void ser(Serdes &output);
-    /** 
-     * @brief get size of object if serialized
-     *
-     */
-    size_t sersize();
-    /** 
-     * @brief deserialize from byte array
-     *
-     * @param input array to deserialize from
-     *
-     */
-    void des(Serdes &input);
 
     /** 
      * @brief serialize a field value, such as into an LMDB value
@@ -443,5 +388,20 @@ public:
     FieldValue defaultValue;
     bool nullconstraint;
 };
+void ser(FieldValue::valtype_e d, Serdes &output);
+size_t sersize(FieldValue::valtype_e d);
+void des(Serdes &input, FieldValue::valtype_e &d);
+
+void ser(const FieldValue &d, Serdes &output);
+size_t sersize(const FieldValue &d);
+void des(Serdes &input, FieldValue &d);
+
+void ser(Field::type_e d, Serdes &output);
+size_t sersize(Field::type_e d);
+void des(Serdes &input, Field::type_e &d);
+
+void ser(const Field &d, Serdes &output);
+size_t sersize(const Field &d);
+void des(Serdes &input, Field &d);
 
 #endif // INFINISQLFIELD_H

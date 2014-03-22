@@ -43,37 +43,49 @@ Message::~Message()
     
 }
 
-void Message::ser(Serdes &output)
-{
-    output.ser((void *)&message, sizeof(message));
-}
-
-size_t Message::sersize()
-{
-    return sizeof(message);
-}
-
 Serdes *Message::sermsg()
 {
     Serdes *serobj;
     switch (message.payloadtype)
     {
     case PAYLOAD_MESSAGE:
-        serobj=new (std::nothrow) Serdes(sersize());
+        serobj=new (std::nothrow) Serdes(sersize(*this));
         if (serobj != nullptr)
         {
-            ser(*serobj);
+            ser(*this, *serobj);
         }
         break;
 
     case PAYLOAD_SOCKET:
     {
         MessageSocket &msgRef=*(MessageSocket *)this;
-        serobj=new (std::nothrow) Serdes(msgRef.sersize());
+        serobj=new (std::nothrow) Serdes(sersize(msgRef));
         if (serobj != nullptr)
         {
-            msgRef.ser(*serobj);
+            ser(msgRef, *serobj);
         }
+    }
+    break;
+
+    case PAYLOAD_USERSCHEMA:
+    {
+        MessageUserSchema &msgRef=*(MessageUserSchema *)this;
+        serobj=new (std::nothrow) Serdes(sersize(msgRef));
+        if (serobj != nullptr)
+        {
+            ser(msgRef, *serobj);
+        }
+    }
+    break;
+
+    case PAYLOAD_USERSCHEMAREPLY:
+    {
+        MessageUserSchemaReply &msgRef=*(MessageUserSchemaReply *)this;
+        serobj=new (std::nothrow) Serdes(sersize(msgRef));
+        if (serobj != nullptr)
+        {
+            ser(msgRef, *serobj);
+        }        
     }
     break;
         
@@ -88,7 +100,7 @@ Serdes *Message::sermsg()
 Message *Message::deserialize(Serdes &input)
 {
     message_s messagedata;
-    input.des((void *)&messagedata, sizeof(messagedata));
+    des(input, (void *)&messagedata, sizeof(messagedata));
     Message *deserializedMessage;
     switch (messagedata.payloadtype)
     {
@@ -106,9 +118,31 @@ Message *Message::deserialize(Serdes &input)
         {
             MessageSocket &msgRef=*(MessageSocket *)deserializedMessage;
             msgRef.message=messagedata;
-            input.des((void *)&msgRef.socketdata, sizeof(msgRef.socketdata));
+            des(input, *deserializedMessage);
         }
-        break;        
+        break;
+
+    case PAYLOAD_USERSCHEMA:
+        deserializedMessage=(Message *)new (std::nothrow) MessageUserSchema;
+        if (deserializedMessage != nullptr)
+        {
+            MessageUserSchema &msgRef=*(MessageUserSchema *)deserializedMessage;
+            msgRef.message=messagedata;
+            des(input, *deserializedMessage);
+        }
+        break;
+
+    case PAYLOAD_USERSCHEMAREPLY:
+        deserializedMessage=(Message *)new (std::nothrow)
+            MessageUserSchemaReply;
+        if (deserializedMessage != nullptr)
+        {
+            MessageUserSchemaReply &msgRef=
+                *(MessageUserSchemaReply *)deserializedMessage;
+            msgRef.message=messagedata;
+            des(input, *deserializedMessage);
+        }
+        break;
 
     default:
         LOG("can't deserialize message type " << messagedata.payloadtype);
@@ -116,13 +150,6 @@ Message *Message::deserialize(Serdes &input)
     }
 
     return deserializedMessage;
-}
-
-void Message::setEnvelope(address_s &sourceAddress,
-                          address_s &destinationAddress)
-{
-    message.sourceAddress=sourceAddress;
-    message.destinationAddress=destinationAddress;
 }
 
 MessageSocket::MessageSocket()
@@ -137,29 +164,28 @@ MessageSocket::MessageSocket(topic_e topic, int16_t destnodeid, int sockfd,
     
 }
 
-void MessageSocket::ser(Serdes &output)
-{
-    Message::ser(output);
-    output.ser((void *)&socketdata, sizeof(socketdata));
-}
-
-size_t MessageSocket::sersize()
-{
-    return Message::sersize() + sizeof(message);
-}
-
-void MessageSocket::des(Serdes &input)
-{
-    input.des((void *)&socketdata, sizeof(socketdata));
-}
-
-MessageBatch::MessageBatch()
+MessageRpc::MessageRpc()
 {
     
 }
 
-MessageBatch::MessageBatch(int16_t destnodeid)
-    : Message(TOPIC_BATCH, PAYLOAD_BATCH, destnodeid), nmsgs(0), messagebatch()
+MessageRpc::~MessageRpc()
+{
+    
+}
+
+MessageUserSchema::MessageUserSchema()
+{
+    
+}
+
+MessageUserSchemaReply::MessageUserSchemaReply()
+{
+    
+}
+
+MessageBatch::MessageBatch()
+    : Message(TOPIC_BATCH, PAYLOAD_BATCH, 0), nmsgs(0), messagebatch()
 {
     
 }
@@ -170,4 +196,94 @@ MessageSerialized::MessageSerialized(const Serdes &serializeddata)
     memcpy(&message, serializeddata.val.mv_data, sizeof(message));
     message.topic=TOPIC_SERIALIZED;
     message.payloadtype=PAYLOAD_SERIALIZED;
+}
+
+void ser(const Message &d, Serdes &output)
+{
+    ser((char *)&d.message, sizeof(d.message), output);
+}
+
+size_t sersize(const Message &d)
+{
+    return sizeof(d.message);
+}
+
+void des(Serdes &input, Message &d)
+{
+    des(input, &d.message, sizeof(d.message));
+}
+
+void ser(const MessageSocket &d, Serdes &output)
+{
+    ser((const Message &)d, output);
+    ser((char *)&d.socketdata, sizeof(d.socketdata), output);
+}
+
+size_t sersize(const MessageSocket &d)
+{
+    return sersize((const Message &)d) + sizeof(d.socketdata);
+}
+
+/* no need to deserialize the Message base class, because that's already
+ * done by Message::deserialize()
+ */
+void des(Serdes &input, MessageSocket &d)
+{
+    des(input, &d.socketdata, sizeof(d.socketdata));
+}
+
+void ser(const MessageRpc &d, Serdes &output)
+{
+    ser((const Message &)d, output);
+    ser((char *)&d.rpc, sizeof(d.rpc), output);
+}
+
+size_t sersize(const MessageRpc &d)
+{
+    return sersize((const Message &)d) + sizeof(d.rpc);
+}
+
+void des(Serdes &input, MessageRpc &d)
+{
+    des(input, &d.rpc, sizeof(d.rpc));
+}
+
+void ser(const MessageUserSchema &d, Serdes &output)
+{
+    ser((const MessageRpc &)d, output);
+    ser((char *)&d.userschemadata, output);
+    ser(d.name, output);
+    ser(d.partitiongroupname, output);
+}
+
+size_t sersize(const MessageUserSchema &d)
+{
+    return sersize((const MessageRpc &)d) + sizeof(d.userschemadata) +
+        sersize(d.name) + sersize(d.partitiongroupname);
+}
+
+void des(Serdes &input, MessageUserSchema &d)
+{
+    des(input, (MessageRpc &)d);
+    des(input, &d.userschemadata, sizeof(d.userschemadata));
+    des(input, d.name);
+    des(input, d.partitiongroupname);
+}
+
+void ser(const MessageUserSchemaReply &d, Serdes &output)
+{
+    ser((const MessageRpc &)d, output);
+    ser((char *)&d.userschemareplydata, output);
+}
+
+size_t sersize(const MessageUserSchemaReply &d)
+{
+    return sersize((const MessageRpc &)d) +
+        sizeof(d.userschemareplydata);
+}
+
+void des(Serdes &input, MessageUserSchemaReply &d)
+{
+    des(input, (MessageRpc &)d);
+    des(input, &d.userschemareplydata, sizeof(d.userschemareplydata));
 }

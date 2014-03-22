@@ -23,8 +23,6 @@
  * @date   Mon Jan 13 13:02:02 2014
  * 
  * @brief  schema is a collection of tables and indices
- * 
- * 
  */
 
 #ifndef INFINISQLSCHEMA_H
@@ -39,25 +37,23 @@ class Schema : public Metadata
 {
 public:
     Schema();
-    Schema(std::shared_ptr<Catalog> parentCatalog, const std::string& name);
     Schema(const Schema &orig);
     Schema &operator= (const Schema &orig);
     ~Schema();
 
-    void ser(Serdes &output);
-    size_t sersize();
-    void des(Serdes &input);    
-    /** 
-     * @brief get metadata parent information from parentTable
-     *
-     */
-    void getparents();
+    int16_t parentcatalogid;
     
-    std::unordered_map<std::string, int16_t> tableName2Id; /**< tableName2Id[name]=tableid */
-    std::unordered_map<int16_t, Table *> tableid2Table; /**< tableid2Table[tableid]=Table* */
-    std::unordered_map<std::string, int16_t> indexName2Id; /**< indexName2Id[name]=indexid */
-    std::unordered_map<int16_t, Index *> indexid2Index; /**< indexid2Index[indexid]=Index* */
+    int16_t nexttableid;
+
+    std::unordered_map<std::string, int16_t> tableName2Id;
+    std::unordered_map<std::string, int16_t> indexName2Id;
+    // tableid2Table[tableid][versionid]=Table*
+    std::unordered_map< int16_t, std::unordered_map<int16_t, Table *> >
+        tableid2Table;
 };
+void ser(const Schema &d, Serdes &output);
+size_t sersize(const Schema &d);
+void des(Serdes &input, Schema &d);
 
 #endif // INFINISQLSCHEMA_H
 

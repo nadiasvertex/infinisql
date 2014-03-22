@@ -29,26 +29,9 @@
 #include "Catalog.h"
 
 
-User::User() : Metadata ()
+User::User()
 {
     
-}
-
-User::User(std::shared_ptr<Catalog> parentCatalog, const std::string &name,
-           std::string &password)
-    : password (password)
-{
-    if (parentCatalog->userName2Id.count(name))
-    {
-        id=-1;
-        return;
-    }
-    this->parentCatalog=parentCatalog;
-    getparents();
-    id=parentCatalog->getnextuserid();
-    this->name=name;
-    parentCatalog->userName2Id[name]=id;
-    parentCatalog->userid2User[id]=this;
 }
 
 User::User(const User &orig) : Metadata (orig)
@@ -73,28 +56,19 @@ User::~User()
     
 }
 
-void User::ser(Serdes &output)
+void ser(const User &d, Serdes &output)
 {
-    Metadata::ser(output);
-    output.ser(password);
+    ser((const Metadata &)d, output);
+    ser(d.password, output);
 }
 
-size_t User::sersize()
+size_t sersize(const User &d)
 {
-    return Metadata::sersize() + Serdes::sersize(password);
+    return sersize((const Metadata &)d) + sersize(d.password);
 }
 
-void User::des(Serdes &input)
+void des(Serdes &input, User &d)
 {
-    Metadata::des(input);
-    input.des(password);
-}
-
-void User::getparents()
-{
-    parentSchema=nullptr;
-    parentTable=nullptr;
-    parentcatalogid=parentCatalog->id;
-    parentschemaid=-1;
-    parenttableid=-1;
+    des(input, (Metadata &)d);
+    des(input, d.password);
 }

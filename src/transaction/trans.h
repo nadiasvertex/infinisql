@@ -18,49 +18,16 @@
  */
 
 /**
- * @file   Schema.cc
+ * @file   trans.h
  * @author Mark Travis <mtravis15432+src@gmail.com>
- * @date   Mon Jan 13 13:04:58 2014
+ * @date   Sat Feb 15 00:58:12 2014
  * 
- * @brief  schema is a collection of tables and indices
+ * @brief  header for Transaction-oriented headers
  */
 
-#include "Schema.h"
-#include "Catalog.h"
+#ifndef INFINISQLTRANS_H
+#define INFINISQLTRANS_H
 
-Schema::Schema()
-{
-    
-}
+#include "UserSchemaOperation.h"
 
-Schema::Schema(const Schema &orig) : Metadata(orig)
-{
-    (Metadata)*this=Metadata(orig);
-    parentcatalogid=orig.parentcatalogid;
-}
-
-Schema &Schema::operator= (const Schema &orig)
-{
-    (Metadata)*this=Metadata(orig);
-    return *this;
-}
-
-Schema::~Schema()
-{
-    
-}
-
-void ser(const Schema &d, Serdes &output)
-{
-    ser((const Metadata &)d, output);
-}
-
-size_t sersize(const Schema &d)
-{
-    return sersize((const Metadata &)d);
-}
-
-void des(Serdes &input, Schema &d)
-{
-    des(input, (Metadata &)d);
-}
+#endif // INFINISQLTRANS_H

@@ -37,36 +37,11 @@ class Table : public Metadata
 {
 public:
     Table();
-    Table(std::shared_ptr<Schema> parentSchema, const std::string &name);
     Table(const Table &orig);
     Table &operator= (const Table &orig);
-    /** 
-     * @brief copy sufficient for reproduction elsewhere
-     *
-     * requires post-processing for destination actors' pointers to related
-     * objects
-     *
-     * @param orig 
-     */
-    void cp(const Table &orig);
     ~Table();
 
-    void ser(Serdes &output);
-    size_t sersize();
-    void des(Serdes &input);
-
-    /** 
-     * @brief fieldid generator
-     *
-     *
-     * @return next fieldid
-     */
-    int16_t getnextfieldid();
-    /** 
-     * @brief get metadata parent information from parentSchema
-     *
-     */
-    void getparents();
+    void getdbname(char *dbname);
     /** 
      * @brief open table database
      *
@@ -75,13 +50,17 @@ public:
      */
     int dbOpen();
 
-    int16_t nextfieldid;
+    int16_t nextindexid;
 
-    std::unordered_map<std::string, int16_t> fieldName2Id; /**< fieldName2Id[name]=fieldid */
-    std::unordered_map<int16_t, Field *> fieldid2Field; /**< fieldid2Field[fieldid]=Field* */
-    std::unordered_map<std::string, int16_t> indexName2Id; /**< indexName2Id[name]=indexid */
-    std::unordered_map<int16_t, Index *> indexid2Index; /**< indexid2Index[indexid]=Index* */
+    std::unordered_map<std::string, int16_t> fieldName2Id;
+    std::vector<Field *> fields;
+    // indexid2Index[indexid][versionid]=Index*
+    std::unordered_map< int16_t, std::unordered_map<int16_t, Index *> >
+        indexid2Index;
 };
+void ser(const Table &d, Serdes &output);
+size_t sersize(const Table &d);
+void des(Serdes &input, Table &d);
 
 #endif // INFINISQLTABLE_H
 

@@ -63,39 +63,6 @@ public:
     
     ~Catalog();
 
-    void ser(Serdes &output);
-    size_t sersize();
-    void des(Serdes &input);
-    
-    /** 
-     * @brief userid generator
-     *
-     *
-     * @return next userid
-     */
-    int16_t getnextuserid();
-    /** 
-     * @brief schemaid generator
-     *
-     *
-     * @return next schemaid
-     */
-    int16_t getnextschemaid();
-    /** 
-     * @brief tableid generator
-     *
-     *
-     * @return next tableid
-     */
-    int16_t getnexttableid();
-    /** 
-     * @brief indexid generator
-     *
-     *
-     * @return next indexid
-     */
-    int16_t getnextindexid();
-
     /** 
      * @brief create and open LMDB environment
      *
@@ -125,18 +92,15 @@ public:
     int deleteEnvironment(std::string path);
     
     int16_t nextuserid;
-    int16_t nextschemaid;
-    int16_t nexttableid;
-    int16_t nextindexid;
 
-    std::unordered_map<std::string, int16_t> userName2Id; /**< userName2Id[name]=userid */
-    std::unordered_map<int16_t, User *> userid2User; /**< userid2User[userid]=User* */
-    std::unordered_map<std::string, int16_t> schemaName2Id; /**< schemaName2Id[name]=schemaid */
-    std::unordered_map<int16_t, Schema *> schemaid2Schema; /**< schemaid2Schema[schemaid]=Schema* */
-    std::unordered_map<std::string, int16_t> tableName2Id; /**< tableName2Id[name]=tableid */
-    std::unordered_map<int16_t, Table *> tableid2Table; /**< tableid2Table[tableid]=Table* */
-    std::unordered_map<std::string, int16_t> indexName2Id; /**< indexName2Id[name]=indexid */
-    std::unordered_map<int16_t, Index *> indexid2Index; /**< indexid2Index[indexid]=Index* */
+    std::unordered_map<std::string, int16_t> userName2Id;
+    std::unordered_map<std::string, int16_t> schemaName2Id;
+    
+    std::unordered_map<int16_t, User *> userid2User;
 };
+
+void ser(const Catalog &d, Serdes &output);
+size_t sersize(const Catalog &d);
+void des(Serdes &input, Catalog &d);
 
 #endif // INFINISQLCATALOG_H
