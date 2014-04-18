@@ -87,9 +87,12 @@ def coco(archive_path):
          
 def protobuf(archive_path):
     archive_folder, archive_name = os.path.split(archive_path)
-    os.system('tar -C "%s" -xjf "%s"' % (archive_folder, archive_path))
-    source_path = os.path.join(archive_folder, "protobuf-2.5.0")
+    os.system('unzip -ud "%s" "%s"' % (archive_folder, archive_path))
+    source_path = os.path.join(archive_folder, "python3-protobuf-master")
     os.chdir(source_path)
+    if not os.path.exists(os.path.join(source_path, "configure")):
+      os.system("./autogen.sh")
+      
     if not os.path.exists(os.path.join(source_path, "Makefile")):
        os.system("./configure")
     
@@ -105,7 +108,8 @@ packages = [("https://www.threadingbuildingblocks.org/sites/default/files/softwa
             ("https://gitorious.org/mdb/mdb/archive/aa3463ec7c5e979420b13c8f37caa377ed2c1cf1.tar.gz",
              lmdb),
             ("http://www.ssw.uni-linz.ac.at/Coco/CPP/CocoSourcesCPP.zip", coco),
-            ("http://protobuf.googlecode.com/files/protobuf-2.5.0.tar.bz2", protobuf),
+            (#"http://protobuf.googlecode.com/files/protobuf-2.5.0.tar.bz2"
+             "https://github.com/openx/python3-protobuf/archive/master.zip", protobuf),
             ]
 
 #===============================================================================
