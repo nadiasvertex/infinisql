@@ -1,7 +1,9 @@
 __author__ = 'Christopher Nelson'
 
+import datetime
 import logging
 import os
+import psutil
 import signal
 import time
 
@@ -38,29 +40,26 @@ def start_management_server(config):
 def stop_management_server(config):
     from infinisqlmgr.management import util
 
-    common.configure_logging(config)
+    logging.basicConfig(level=logging.DEBUG if config.args.debug else logging.INFO,
+                       format=common.DEFAULT_LOG_FORMAT)
+
     cluster_name = config.get("management", "cluster_name")
 
     existing_pid = util.get_pid(config.dist_dir, cluster_name)
     if existing_pid is not None:
-        logging.info("Trying to stop the existing process at pid %d", existing_pid)
-        try:
-            os.kill(existing_pid, signal.SIGTERM)
-        except ProcessLookupError:
-            logging.debug("the management process is not running")
-        else:
-            logging.info("Waiting for process %d exit", existing_pid)
-            try:
-                pid, exit_status = os.waitpid(existing_pid, 0)
-            except ChildProcessError:
-                # We ignore this because the child process might have already gone away, and we
-                # won't be able to get status information about it.
-                pass
-            else:
-                return_code = exit_status >> 8
-                logging.debug("management process exited with code %d", return_code)
-                if return_code != 0:
-                    logging.warning("There was an error while stopping the management process, check the logs for more detail.")
+       try:
+          process = psutil.Process(existing_pid)
+       except psutil.NoSuchProcess:
+          logging.info("Management process is already stopped.")
+       else:
+          created_at = datetime.datetime.fromtimestamp(process.create_time()).strftime("%Y-%m-%d %H:%M:%S")
+          logging.info("Trying to stop the existing process at pid %d started at %s", existing_pid, created_at)
+          process.terminate()
+
+          gone, alive = psutil.wait_procs([process], timeout=5)
+          for p in alive:
+             logging.warn("Unable to gently terminate management process, resorting to more severe measures.")
+             p.kill()
 
     # Make sure that the pid file is gone, even if it's empty.
     if util.exists(config.dist_dir, cluster_name):

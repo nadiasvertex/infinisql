@@ -47,7 +47,7 @@ class Configuration(object):
 
         self.set_default(mt, "cluster_name", "default_cluster")
         self.set_default(mt, "log_config_file", os.path.join(self.dist_dir, "etc", "${cluster_name}.logging.conf"))
-        self.set_default(mt, "log_file", os.path.join(self.dist_dir, "var", "log", "${cluster_name}.management.log"))
+        self.set_default(mt, "log_file", os.path.join(self.dist_dir, "var", "log", "${cluster_name}.${management_node_id}.management.log"))
         self.set_default(mt, "debug", False)
 
         ##########################################
@@ -219,7 +219,7 @@ class Configuration(object):
                 continue
 
             addresses = interface_d.setdefault(interface.name, [])
-            addresses.append(ipaddress.ip_interface("%s/%d" %\
+            addresses.append(ipaddress.ip_interface("%s/%d" % \
                                 (interface.addr[0], self._get_net_size(interface.netmask[1]))))
 
         return interface_d
