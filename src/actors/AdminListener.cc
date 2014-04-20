@@ -25,9 +25,170 @@
  * @brief  0mq listener for administrative commands from cluster manager
  */
 
+#include <memory>
+
 #include "AdminListener.h"
 #include <zmq.h>
 #include "../configuration/reactor.h"
+#include "../configuration/listener.h"
+
+namespace infinisql {
+	namespace configuration {
+		class configuration_listener : public infinisql::configuration::listener {
+			bool stop_requested = false;
+
+		public:
+			virtual ~configuration_listener() {
+			}
+
+			bool is_stop_requested() {
+				return stop_requested;
+			}
+
+			virtual Response on_add_node(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_remove_node(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_stop_node(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_set_node_type(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_partition(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_add_partition(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_delete_partition(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_new_partition(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_persist_partition(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_replicate_partition(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_start_partition(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_stop_partition(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_sync_partition(const Request& r) {
+				Response response;
+				return response;
+			}
+
+			virtual Response on_add_partition_group(const Request& r) {
+				Response response;
+				return response;
+			}
+
+			virtual Response on_start(const Request& r) {
+				Response response;
+				return response;
+			}
+
+			virtual Response on_stop(const Request& r) {
+				Response response;
+
+				stop_requested = true;
+				response.set_status(Response::STATUS_OK);
+				response.set_reason(Response::REASON_NONE);
+
+				return response;
+			}
+
+			virtual Response on_transaction_log(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_start_transaction_log(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_stop_transaction_log(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_notify_when_log_committed(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_notify_when_log_sent(const Request& r) {
+				Response response;
+				return response;
+			}
+
+			virtual Response on_start_transactions(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_finish_and_abort_transactions(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_finish_transactions(const Request& r) {
+				Response response;
+				return response;
+			}
+
+			virtual Response on_set_sync(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_stop_sync(const Request& r) {
+				Response response;
+				return response;
+			}
+
+			virtual Response on_change_manager(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_change_replica(const Request& r) {
+				Response response;
+				return response;
+			}
+
+			virtual Response on_delete_version(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_get_config(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_node_problem(const Request& r) {
+				Response response;
+				return response;
+			}
+			virtual Response on_relayout(const Request& r) {
+				Response response;
+				return response;
+			}
+		};
+	}
+}
 
 AdminListener::AdminListener(Actor::identity_s identity)
     : Actor(identity), zmq_ctx(nullptr), zmq_requestor(nullptr)
@@ -59,6 +220,8 @@ void AdminListener::operator()()
     }
 
     infinisql::configuration::reactor r(zmq_requestor);
+    auto l = std::make_shared<infinisql::configuration::configuration_listener>();
+    r.set_listener(l);
 
     while(true) {
         r.process();

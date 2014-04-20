@@ -60,3 +60,4 @@ def write_pid(dist_dir, cluster_name, pid):
     logging.debug("writing pid %d into %s", pid, run_path)
     with open(run_path, "w") as run_file:
         run_file.write(str(pid))
+        run_file.write("\n")

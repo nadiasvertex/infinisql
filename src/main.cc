@@ -26,6 +26,7 @@
  */
 
 /** @mainpage InfiniSQL(tm)
+ *
  * This is the doxygen-generated documentation for InfiniSQL's C++ source code.
  * User documentation, reference, FAQ, how to obtain the source code, contacts
  * and other information is available at the project's main website:
@@ -105,8 +106,6 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-//    Lightning l;
-
     if (daemon(1, 1))
     {
         LOG("daemon errno");
@@ -118,7 +117,6 @@ int main(int argc, char **argv)
     id.instance=0;
 
     TopologyManager tm(id);
-    tm();
-    
+
     return 0;
 }

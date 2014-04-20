@@ -10,7 +10,9 @@ from infinisqlmgr import common, management
 def start_management_server(config):
     from infinisqlmgr.management import util
 
-    common.configure_logging(config)
+    logging.basicConfig(level=logging.DEBUG if config.args.debug else logging.INFO,
+                       format=common.DEFAULT_LOG_FORMAT)
+
     cluster_name = config.get("management", "cluster_name")
     existing_pid = util.get_pid(config.dist_dir, cluster_name)
     if existing_pid is not None:
@@ -21,11 +23,12 @@ def start_management_server(config):
     logging.debug("forking management server")
     pid = os.fork()
 
-    if pid!=0:
+    if pid != 0:
         util.write_pid(config.dist_dir, cluster_name, pid)
         logging.info("Parent start_management_server() finished")
         return 0
 
+    common.configure_logging(config)
     logging.debug("creating management process")
     management_server = management.Controller(config)
     logging.debug("starting management process")
@@ -56,7 +59,7 @@ def stop_management_server(config):
             else:
                 return_code = exit_status >> 8
                 logging.debug("management process exited with code %d", return_code)
-                if return_code!=0:
+                if return_code != 0:
                     logging.warning("There was an error while stopping the management process, check the logs for more detail.")
 
     # Make sure that the pid file is gone, even if it's empty.

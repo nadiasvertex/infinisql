@@ -217,7 +217,7 @@ class Controller(object):
 
         :return: None
         """
-        if self.current_cluster_size < self.peak_cluster_size/2:
+        if self.current_cluster_size < self.peak_cluster_size / 2:
             return
 
         if self.current_election is None:
@@ -290,7 +290,7 @@ class Controller(object):
 
         # Re-adjust the current cluster size
         self.current_cluster_size = len(self.nodes)
-        if self.current_cluster_size < self.peak_cluster_size/2:
+        if self.current_cluster_size < self.peak_cluster_size / 2:
             logging.warning("Node %s is part of a minority partition. "
                             "Elections will not proceed until a majority is established.",
                             self.node_id)
@@ -404,6 +404,20 @@ class Controller(object):
 
         self.heartbeats[tuple(node_id)] = self.current_node_time
 
+    def on_start_data_engine(self, node_id):
+        """
+        Starts a data engine.
+        :param node_id: The node_id of the data engine to start.
+        """
+        self.start_engine(node_id)
+
+    def on_stop_data_engine(self, node_id):
+        """
+        Starts a data engine.
+        :param node_id: The node_id of the data engine to start.
+        """
+        self.stop_engine(node_id)
+
     def announce_presence(self, force=False):
         """
         Send a presence announcement to the local network segment.
@@ -499,8 +513,17 @@ class Controller(object):
         self.process_leader_tasks()
 
     def start_engine(self, dbe_node_id):
-        engine = infinisqlmgr.engine.Configuration(dbe_node_id, self.dis)
-        self.engines[dbe_node_id] = engine
+        if not self.engines.has_key(dbe_node_id):
+           engine = infinisqlmgr.engine.Configuration(dbe_node_id, self.dis)
+           self.engines[dbe_node_id] = engine
+        else:
+           engine = self.engines[dbe_node_id]
+
+        engine.start()
+
+    def stop_engine(self, dbe_node_id):
+        if self.engines.has_key(dbe_node_id):
+           self.engines[dbe_node_id].stop()
 
     def run_management_only(self):
         """
