@@ -2,5 +2,3 @@ __author__ = 'Christopher Nelson'
 
 HEARTBEAT = 0
 ELECT_LEADER = 1
-START_DATA_ENGINE = 2
-STOP_DATA_ENGINE = 3

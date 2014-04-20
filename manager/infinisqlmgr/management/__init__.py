@@ -8,6 +8,7 @@ import struct
 import time
 from copy import copy
 
+import lmdb
 import msgpack
 import tornado.ioloop
 import tornado.web
@@ -150,6 +151,7 @@ class Controller(object):
         data = sock.recv()
         msg_id, payload = msgpack.unpackb(data)
         handler = self.message_handlers.get(msg_id)
+        logging.info("message received:", msg_id, payload)
         if handler is not None:
             handler(payload)
 
@@ -404,20 +406,6 @@ class Controller(object):
 
         self.heartbeats[tuple(node_id)] = self.current_node_time
 
-    def on_start_data_engine(self, node_id):
-        """
-        Starts a data engine.
-        :param node_id: The node_id of the data engine to start.
-        """
-        self.start_engine(node_id)
-
-    def on_stop_data_engine(self, node_id):
-        """
-        Starts a data engine.
-        :param node_id: The node_id of the data engine to start.
-        """
-        self.stop_engine(node_id)
-
     def announce_presence(self, force=False):
         """
         Send a presence announcement to the local network segment.
@@ -513,17 +501,23 @@ class Controller(object):
         self.process_leader_tasks()
 
     def start_engine(self, dbe_node_id):
-        if not self.engines.has_key(dbe_node_id):
-           engine = infinisqlmgr.engine.Configuration(dbe_node_id, self.dis)
-           self.engines[dbe_node_id] = engine
-        else:
-           engine = self.engines[dbe_node_id]
+      if dbe_node_id not in self.engines:
+         logging.debug("creating new database engine configuration for %s", dbe_node_id)
+         engine = infinisqlmgr.engine.Configuration(dbe_node_id, self.config)
+         self.engines[dbe_node_id] = engine
+      else:
+         logging.debug("using existing database engine configuration for %s", dbe_node_id)
+         engine = self.engines[dbe_node_id]
 
-        engine.start()
+      logging.info("Starting database engine for %s", dbe_node_id)
+      engine.start()
 
     def stop_engine(self, dbe_node_id):
-        if self.engines.has_key(dbe_node_id):
+        if dbe_node_id in self.engines:
            self.engines[dbe_node_id].stop()
+           return True
+        else:
+           return False
 
     def run_management_only(self):
         """

@@ -1,11 +1,11 @@
 __author__ = 'Christopher Nelson'
 
 import logging
-import msgpack
 import os
 import signal
 import sys
-import zmq
+import urllib.request
+import urllib.parse
 
 from infinisqlmgr import common, engine
 from infinisqlmgr.management import msg
@@ -15,50 +15,47 @@ def start_data_server(config):
                        format=common.DEFAULT_LOG_FORMAT)
    node_id = config.args.node_id
    node_ip, node_port = node_id.split(":")
-   cluster_name = config.get("management", "cluster_name")
    mt = config.config["management"]
    management_ip = node_ip
-   management_port = mt["management_port"]
+   configuration_port = mt["configuration_port"]
 
-   addresses = [(node_ip, int(management_port))]
-
-   if management_port == node_port:
+   if node_port in (configuration_port, mt["management_port"]):
       logging.error("Unable to start a database engine on port %s because it "
                     "conflicts with the management server.")
       return
 
    logging.info("Trying to start new database engine at %s", node_id)
 
-   ctx = zmq.Context()
-   socket = ctx.socket(zmq.REQ)
-   poller = zmq.Poller()
-   poller.register(socket, zmq.POLLOUT)
-   for address in addresses:
-      logging.debug("connecting to management server (%s:%s)", address[0], address[1])
-      socket.connect("tcp://%s:%s" % (address[0], address[1]))
-      logging.debug("polling for connection")
-      events = poller.poll(1000)
-      if not events:
-         logging.warn("unable to connect to management server on (%s:%s)", address[0], address[1])
-      logging.debug("sending start command")
-      socket.send(msgpack.packb((msg.START_DATA_ENGINE, node_id)))
-      logging.debug("closing socket")
-      poller.unregister(socket)
-      socket.close()
-      logging.debug("completed.")
-      sys.exit(0)
-      return
-   else:
-      logging.error("Unable to connect to the management server on any available address.")
+   url = urllib.parse.urlunparse(('http', "%s:%s" % (node_ip, configuration_port), "/dbe/start/%s/%s/" % (node_ip, node_port), None, None, None))
+   logging.debug("request=%s", url)
+   with urllib.request.urlopen(url) as f:
+      pass
 
-def stop_data_server(args):
-    common.configure_logging(config)
+
+def stop_data_server(config):
+   logging.basicConfig(level=logging.DEBUG if config.args.debug else logging.INFO,
+                      format=common.DEFAULT_LOG_FORMAT)
+   node_id = config.args.node_id
+   node_ip, node_port = node_id.split(":")
+   mt = config.config["management"]
+   management_ip = node_ip
+   configuration_port = mt["configuration_port"]
+
+   logging.info("Trying to stop existing database engine at %s", node_id)
+
+   url = urllib.parse.urlunparse(('http', "%s:%s" % (node_ip, configuration_port), "/dbe/stop/%s/%s/" % (node_ip, node_port), None, None, None))
+   logging.debug("request=%s", url)
+   with urllib.request.urlopen(url) as f:
+      pass
+
 
 def show_data_server(args):
-    common.configure_logging(config)
+    logging.basicConfig(level=logging.DEBUG if config.args.debug else logging.INFO,
+                       format=common.DEFAULT_LOG_FORMAT)
 
 def list_data_servers(args):
-    common.configure_logging(config)
+    logging.basicConfig(level=logging.DEBUG if config.args.debug else logging.INFO,
+                       format=common.DEFAULT_LOG_FORMAT)
 
 def add_args(sub_parsers):
     mgr_parser = sub_parsers.add_parser('dbe', help='Options for controlling database engine processes')

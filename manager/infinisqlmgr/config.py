@@ -74,9 +74,6 @@ class Configuration(object):
         self.set_default(de, "configuration_ip", self.resolve(de, "configuration_interface",
                                                               "engine_configuration_interface"))
         self.set_default(de, "configuration_port", 11520)
-        self.set_default(de, "legacy_listen_interface", "*")
-        self.set_default(de, "legacy_listen_ip", self.resolve(de, "legacy_listen_interface"))
-        self.set_default(de, "legacy_listen_port", 11521)
         self.set_default(de, "inbound_gateway_port", 11530)
         self.set_default(de, "sql_interface", "*")
         self.set_default(de, "sql_ip", self.resolve(de, "sql_interface"))

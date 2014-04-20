@@ -3,6 +3,7 @@ from os import uname
 __author__ = 'Christopher Nelson'
 
 import json
+import socket
 import time
 
 import parsedatetime
@@ -50,11 +51,11 @@ class ManagementNodeDetailsHandler(tornado.web.RequestHandler):
 class MetricsHandler(tornado.web.RequestHandler):
     def process_metric(self, operation, values):
         values = [v for v in values if v is not None]
-        if operation=="min":
+        if operation == "min":
             return min(values)
-        elif operation=="max":
+        elif operation == "max":
             return max(values)
-        if operation=="avg":
+        if operation == "avg":
             return sum(values) / len(values)
 
     def get(self, metric_name, operation):
@@ -78,7 +79,7 @@ class MetricsHandler(tornado.web.RequestHandler):
             "from"       : result[0][0],
             "until"      : result[0][1],
             "resolution" : result[0][2],
-            "values"     : result[1] if operation=="values" else self.process_metric(operation, result[1])
+            "values"     : result[1] if operation == "values" else self.process_metric(operation, result[1])
          }))
 
 
@@ -90,9 +91,18 @@ class MetricsListHandler(tornado.web.RequestHandler):
 
 
 class DatabaseEngineHandler(tornado.web.RequestHandler):
-    def get(self, operation, dbe_node_id):
+    def get(self, operation, node_ip, node_port):
         instance = infinisqlmgr.management.Controller.instance
-
+        dbe_node_id = (socket.gethostbyname(node_ip), node_port)
+        if operation == "start":
+           instance.start_engine(dbe_node_id)
+        elif operation == "stop":
+           if not instance.stop_engine(dbe_node_id):
+              self.set_status(400, "Unknown database engine.")
+              self.write(json.dumps({"error" : "Database engine %s is not running." % dbe_node_id}))
+        else:
+           self.set_status(400, "Unknown operation.")
+           self.write(json.dumps({"error" : "Operation %s is not supported" % operation}))
 
 
 handlers = [
@@ -100,5 +110,5 @@ handlers = [
     (r"/nodes/management/", ManagementNodeListHandler),
     (r"/metrics/([a-zaA-Z0-9.]+)/(avg|min|max|values)/", MetricsHandler),
     (r"/metrics/", MetricsListHandler),
-    (r"/dbe/(start|stop)/(\w+)/", DatabaseEngineHandler)
+    (r"/dbe/(start|stop)/([a-zaA-Z0-9.]+)/(\d+)/", DatabaseEngineHandler)
 ]

@@ -17,8 +17,8 @@ class Configuration(object):
         self.infinisql = config.get("data engine", "infinisqld")
         self.log_file = config.get("data engine", "log_file")
 
-        self.management_ip = config.get("data engine", "management_ip")
-        self.management_port = config.get("data engine", "management_port")
+        self.configuration_ip = config.get("data engine", "configuration_ip")
+        self.configuration_port = config.get("data engine", "configuration_port")
         self.pid = None
 
         self.ctx = zmq.Context.instance()
@@ -33,13 +33,18 @@ class Configuration(object):
         Connects to the database engine's management port.
         :return: None
         """
-        ip = "*" if self.management_ip=="*" else self.management_ip
+        if self.configuration_ip == "*":
+            addresses = [interface[0].ip.compressed
+                         for interface in self.config.interfaces().values()]
+            ip = addresses[0]
+        else:
+           ip = self.configuration_ip
 
-        logging.debug("connecting to database engine management port (%s:%s)", self.management_ip, self.management_port)
+        logging.debug("connecting to database engine management port (%s:%s)", self.configuration_ip, self.configuration_port)
         self.socket = self.ctx.socket(zmq.REQ)
-        self.socket.connect("tcp://%s:%s" % (ip, self.management_port))
+
+        self.socket.connect("tcp://%s:%s" % (ip, self.configuration_port))
         self.poller.register(self.socket, zmq.POLLIN)
-        self.state.get_topology_mgr_mbox_ptr(self.socket)
 
     def set_next_handler(self, handler):
         self.receive_handler = handler
@@ -72,7 +77,7 @@ class Configuration(object):
 
         # -m <management ip:port> -n <nodeid> -l <log path/file>
         self.pid = os.spawnl(os.P_NOWAIT, self.infinisql, self.infinisql,
-                              '-m', '%s:%s' % (self.management_ip, self.management_port),
+                              '-m', '%s:%s' % (self.configuration_ip, self.configuration_port),
                               '-n', str(self.node_id),
                               '-l', self.log_file)
 
@@ -93,15 +98,15 @@ class Configuration(object):
         self.socket.close()
         self.socket = None
 
-        logging.info("Stopping database engine pid=%s", self.pid)
-        os.kill(self.pid, signal.SIGTERM)
-        os.waitpid(self.pid, 0)
+        logging.info("Stopping database engine pid=%s node=%s", self.pid, str(self.node_id))
+        process = psutil.Process(self.pid)
+        process.terminate()
 
-        # Now search for any remaining database processes in order to ensure that we have closed everything down.
-        for p in psutil.process_iter():
-            if "infinisqld" in p.name:
-                logging.info("Terminating '%s' pid=%s", p.name, p.pid)
-                p.terminate()
+        gone, alive = psutil.wait_procs([process], timeout=5)
+        for p in alive:
+          logging.warn("Unable to gently terminate database engine process, resorting to more severe measures.")
+          p.kill()
+
         logging.info("Stopped database engine.")
         self.pid = None
 
